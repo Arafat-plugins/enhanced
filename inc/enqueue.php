@@ -19,7 +19,7 @@ function enhanced_enqueue() {
 		ENHANCED_VERSION
 	);
 
-	if ( enhanced_is_woo() ) {
+	if ( enhanced_should_load_woo_assets() ) {
 		wp_enqueue_style( 'enhanced-woo',
 			ENHANCED_URI . 'assets/css/woocommerce.css',
 			array( 'enhanced-main' ),

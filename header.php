@@ -1,15 +1,21 @@
 <?php
 /**
- * Theme header — utility bar + main nav.
+ * Theme header with utility bar, primary navigation, and search drawer.
  *
  * @package Enhanced
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$util_text = enhanced_get_option( 'utility_text', __( 'Free shipping on orders over $100', 'enhanced' ) );
-$util_link = enhanced_get_option( 'utility_link', '' );
-?><!doctype html>
+$util_text      = enhanced_get_option( 'utility_text', __( 'Free shipping on orders over $100', 'enhanced' ) );
+$util_link      = enhanced_get_option( 'utility_link', '' );
+$contact_email  = enhanced_get_option( 'contact_email', 'hello@enhanced.store' );
+$contact_phone  = enhanced_get_option( 'contact_phone', '+1 (800) 000-0000' );
+$contact_email_label = $contact_email ? antispambot( $contact_email ) : '';
+$contact_mailto      = $contact_email ? sanitize_email( $contact_email ) : '';
+$contact_tel    = $contact_phone ? preg_replace( '/[^0-9\+]/', '', $contact_phone ) : '';
+?>
+<!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
@@ -21,13 +27,16 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 
 <a class="screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'enhanced' ); ?></a>
 
-<!-- ── Utility bar ────────────────────────────────────────── -->
 <div class="utility-bar">
 	<div class="container utility-bar__inner">
 		<div class="utility-bar__left">
 			<div class="utility-bar__icon-links">
-				<a href="mailto:hello@enhanced.store">✉ hello@enhanced.store</a>
-				<a href="tel:+10000000000">✆ +1 000 000 0000</a>
+				<?php if ( $contact_mailto ) : ?>
+					<a href="mailto:<?php echo esc_attr( $contact_mailto ); ?>"><?php echo esc_html( $contact_email_label ); ?></a>
+				<?php endif; ?>
+				<?php if ( $contact_tel ) : ?>
+					<a href="tel:<?php echo esc_attr( $contact_tel ); ?>"><?php echo esc_html( $contact_phone ); ?></a>
+				<?php endif; ?>
 			</div>
 		</div>
 
@@ -41,18 +50,22 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 
 		<div class="utility-bar__right">
 			<?php if ( has_nav_menu( 'utility' ) ) : ?>
-				<?php wp_nav_menu( array(
+				<?php
+				wp_nav_menu( array(
 					'theme_location' => 'utility',
 					'menu_class'     => 'utility-nav',
 					'container'      => false,
 					'depth'          => 1,
 					'fallback_cb'    => false,
 					'items_wrap'     => '<nav class="utility-bar__icon-links">%3$s</nav>',
-					'walker'         => null,
-				) ); ?>
+				) );
+				?>
 			<?php else : ?>
 				<a class="utility-bar__link" href="<?php echo esc_url( enhanced_account_url() ); ?>">
-					<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+					<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+						<circle cx="8" cy="5.5" r="3" stroke="currentColor" stroke-width="1.4"/>
+						<path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+					</svg>
 					<?php esc_html_e( 'My Account', 'enhanced' ); ?>
 				</a>
 				<a class="utility-bar__link" href="<?php echo esc_url( enhanced_cart_url() ); ?>">
@@ -64,11 +77,8 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 	</div>
 </div>
 
-<!-- ── Main header ───────────────────────────────────────── -->
 <header class="site-header" data-site-header>
 	<div class="container site-header__inner">
-
-		<!-- Mobile toggle -->
 		<button
 			class="site-header__toggle"
 			type="button"
@@ -80,7 +90,6 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 			<span></span><span></span><span></span>
 		</button>
 
-		<!-- Logo -->
 		<div class="site-header__logo">
 			<?php if ( has_custom_logo() ) : ?>
 				<?php the_custom_logo(); ?>
@@ -94,7 +103,6 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 			<?php endif; ?>
 		</div>
 
-		<!-- Primary nav -->
 		<nav id="primary-nav" class="site-header__nav" data-menu-panel aria-label="<?php esc_attr_e( 'Primary', 'enhanced' ); ?>">
 			<?php
 			if ( has_nav_menu( 'primary' ) ) {
@@ -105,18 +113,19 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 					'depth'          => 2,
 					'fallback_cb'    => false,
 					'items_wrap'     => '<ul id="%1$s" class="%2$s">%3$s</ul>',
-					'after'          => '',
 				) );
 			} else {
-				// Fallback
 				echo '<ul class="primary-nav">';
 				echo '<li><a href="' . esc_url( home_url( '/' ) ) . '">' . esc_html__( 'Home', 'enhanced' ) . '</a></li>';
+
 				if ( enhanced_is_woo() ) {
 					$shop_id = wc_get_page_id( 'shop' );
+
 					if ( $shop_id > 0 ) {
 						echo '<li><a href="' . esc_url( get_permalink( $shop_id ) ) . '">' . esc_html__( 'Shop', 'enhanced' ) . '</a></li>';
 					}
 				}
+
 				echo '<li><a href="' . esc_url( home_url( '/collections/' ) ) . '">' . esc_html__( 'Collections', 'enhanced' ) . '</a></li>';
 				echo '<li><a href="' . esc_url( home_url( '/about/' ) ) . '">' . esc_html__( 'About', 'enhanced' ) . '</a></li>';
 				echo '</ul>';
@@ -124,7 +133,6 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 			?>
 		</nav>
 
-		<!-- Actions -->
 		<div class="site-header__actions">
 			<button
 				class="header-icon-btn"
@@ -153,11 +161,9 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 				<span class="header-cart__count" data-cart-count><?php echo esc_html( enhanced_cart_count() ); ?></span>
 			</a>
 		</div>
-
 	</div>
 </header>
 
-<!-- ── Search drawer ─────────────────────────────────────── -->
 <div class="search-drawer" id="search-drawer" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Search', 'enhanced' ); ?>" hidden data-search-drawer>
 	<div class="search-drawer__backdrop" data-search-close></div>
 	<div class="search-drawer__box">
@@ -170,7 +176,7 @@ $util_link = enhanced_get_option( 'utility_link', '' );
 				class="search-drawer__input"
 				type="search"
 				name="s"
-				placeholder="<?php esc_attr_e( 'Search for products, brands, collections…', 'enhanced' ); ?>"
+				placeholder="<?php esc_attr_e( 'Search for products, brands, collections...', 'enhanced' ); ?>"
 				value="<?php echo esc_attr( get_search_query() ); ?>"
 				autocomplete="off"
 				data-search-input
