@@ -74,6 +74,9 @@
 		initQuantityButtons();
 		initProductTabs();
 		initProductGallery();
+		initVariationPills();
+		initSimpleOptionPickers();
+		initWishlistTogglePatched();
 		initHomeRails();
 		initHeroSlider();
 		initArrivalShowcase();
@@ -520,8 +523,63 @@
 	function initProductGallery() {
 		document.querySelectorAll("[data-product-gallery]").forEach(function (gallery) {
 			const mainImage = gallery.querySelector("[data-gallery-main]");
-			const thumbs = gallery.querySelectorAll("[data-gallery-thumb]");
-			if (!mainImage || !thumbs.length) return;
+			const thumbs = Array.from(gallery.querySelectorAll("[data-gallery-thumb]"));
+			if (!mainImage) return;
+
+			const setThumbState = function (activeThumb) {
+				thumbs.forEach(function (button) {
+					const isActive = button === activeThumb;
+					button.classList.toggle("is-active", isActive);
+					button.setAttribute("aria-pressed", String(isActive));
+				});
+			};
+
+			const findThumbBySource = function (source) {
+				if (!source) {
+					return null;
+				}
+
+				return (
+					thumbs.find(function (thumb) {
+						return thumb.dataset.fullSrc === source;
+					}) || null
+				);
+			};
+
+			const setMainImage = function (source, alt, matchedThumb) {
+				if (!source) {
+					return;
+				}
+
+				mainImage.src = source;
+				mainImage.alt = alt || mainImage.alt;
+				setThumbState(matchedThumb || findThumbBySource(source));
+			};
+
+			const rememberBaseImage = function (source, alt) {
+				if (!source) {
+					return;
+				}
+
+				gallery.dataset.baseImageSrc = source;
+				gallery.dataset.baseImageAlt = alt || "";
+			};
+
+			const activeThumb = gallery.querySelector("[data-gallery-thumb].is-active");
+			rememberBaseImage(
+				(activeThumb && activeThumb.dataset.fullSrc) || mainImage.currentSrc || mainImage.src,
+				(activeThumb && activeThumb.dataset.alt) || mainImage.alt
+			);
+
+			gallery.enhancedSetMainImage = function (source, alt) {
+				setMainImage(source, alt, findThumbBySource(source));
+			};
+
+			gallery.enhancedResetMainImage = function () {
+				const baseSource = gallery.dataset.baseImageSrc || mainImage.currentSrc || mainImage.src;
+				const baseAlt = gallery.dataset.baseImageAlt || mainImage.alt;
+				setMainImage(baseSource, baseAlt, findThumbBySource(baseSource));
+			};
 
 			thumbs.forEach(function (thumb) {
 				thumb.addEventListener("click", function () {
@@ -529,18 +587,363 @@
 					const alt = thumb.dataset.alt || mainImage.alt;
 					if (!fullSrc) return;
 
-					mainImage.src = fullSrc;
-					mainImage.alt = alt;
-
-					thumbs.forEach(function (button) {
-						button.classList.remove("is-active");
-						button.setAttribute("aria-pressed", "false");
-					});
-
-					thumb.classList.add("is-active");
-					thumb.setAttribute("aria-pressed", "true");
+					rememberBaseImage(fullSrc, alt);
+					setMainImage(fullSrc, alt, thumb);
 				});
 			});
+		});
+	}
+
+	function initVariationPills() {
+		const commonColors = {
+			black: "#111111",
+			white: "#ffffff",
+			red: "#e53e3e",
+			blue: "#2563eb",
+			navy: "#1e3a8a",
+			green: "#16a34a",
+			olive: "#6b8e23",
+			yellow: "#eab308",
+			pink: "#ec4899",
+			maroon: "#7f1d1d",
+			brown: "#8b5a2b",
+			beige: "#d6c4a1",
+			grey: "#6b7280",
+			gray: "#6b7280",
+			cream: "#f5e6d3",
+			orange: "#f97316",
+			purple: "#7c3aed",
+		};
+		const colorMap = Object.assign({}, commonColors, settings.variationColors || {});
+		const normalizeValue = function (value) {
+			return String(value || "")
+				.toLowerCase()
+				.trim()
+				.replace(/[^a-z0-9]+/g, "-")
+				.replace(/^-+|-+$/g, "");
+		};
+		const isLightColor = function (value) {
+			const normalized = String(value || "").trim().toLowerCase();
+			const hexMatch = normalized.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+			if (!hexMatch) {
+				return false;
+			}
+
+			let hex = hexMatch[1];
+			if (hex.length === 3) {
+				hex = hex
+					.split("")
+					.map(function (part) {
+						return part + part;
+					})
+					.join("");
+			}
+
+			const red = parseInt(hex.slice(0, 2), 16);
+			const green = parseInt(hex.slice(2, 4), 16);
+			const blue = parseInt(hex.slice(4, 6), 16);
+			const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
+
+			return brightness >= 214;
+		};
+		const getAttributeType = function (select) {
+			const row = select.closest("tr");
+			const labelElement = row ? row.querySelector("label") : null;
+			const label = labelElement ? labelElement.textContent.toLowerCase().trim() : "";
+			const attributeName = (
+				select.getAttribute("data-attribute_name") ||
+				select.name ||
+				select.id ||
+				""
+			)
+				.toLowerCase()
+				.trim();
+
+			if (attributeName.includes("color") || label.includes("color")) {
+				return "color";
+			}
+
+			if (attributeName.includes("size") || label.includes("size")) {
+				return "size";
+			}
+
+			return "text";
+		};
+		const getColorValue = function (option) {
+			const candidates = [
+				option.value,
+				option.textContent,
+				option.label,
+				option.dataset ? option.dataset.slug : "",
+			]
+				.map(normalizeValue)
+				.filter(Boolean);
+
+			for (const candidate of candidates) {
+				if (colorMap[candidate]) {
+					return colorMap[candidate];
+				}
+			}
+
+			return "#cccccc";
+		};
+
+		document.querySelectorAll(".variations_form").forEach(function (form) {
+			const selects = Array.from(form.querySelectorAll(".variations select"));
+			if (!selects.length) return;
+
+			selects.forEach(function (select) {
+				if (select.dataset.pillsReady === "true") {
+					return;
+				}
+
+				const wrapper = document.createElement("div");
+				const attributeType = getAttributeType(select);
+				wrapper.className = "variation-pills variation-pills--" + attributeType;
+				select.insertAdjacentElement("afterend", wrapper);
+				select.classList.add("variation-select--enhanced");
+				select.dataset.pillsReady = "true";
+
+				const sync = function () {
+					const options = Array.from(select.options).filter(function (option) {
+						return option.value;
+					});
+
+					if (options.length < 2) {
+						wrapper.hidden = true;
+						select.classList.remove("variation-select--enhanced");
+						return;
+					}
+
+					select.classList.add("variation-select--enhanced");
+					wrapper.hidden = false;
+					wrapper.innerHTML = "";
+
+					options.forEach(function (option) {
+						const button = document.createElement("button");
+						button.type = "button";
+						button.className = "variation-pills__button";
+						button.disabled = option.disabled;
+
+						const isActive = select.value === option.value;
+						button.classList.toggle("is-active", isActive);
+						button.setAttribute("aria-pressed", String(isActive));
+						button.dataset.value = option.value;
+
+						if (attributeType === "color") {
+							const colorValue = getColorValue(option);
+							button.classList.add("variation-pills__button--color");
+							button.classList.toggle("variation-pills__button--light", isLightColor(colorValue));
+							button.setAttribute("aria-label", option.text.trim());
+
+							const swatch = document.createElement("span");
+							swatch.className = "variation-pills__swatch";
+							swatch.style.setProperty("--variation-swatch-color", colorValue);
+							swatch.setAttribute("aria-hidden", "true");
+
+							const srText = document.createElement("span");
+							srText.className = "screen-reader-text";
+							srText.textContent = option.text.trim();
+
+							button.appendChild(swatch);
+							button.appendChild(srText);
+						} else {
+							if (attributeType === "size") {
+								button.classList.add("variation-pills__button--size");
+							}
+
+							button.textContent = option.text.trim();
+						}
+
+						button.addEventListener("click", function () {
+							if (option.disabled) {
+								return;
+							}
+
+							select.value = option.value;
+							select.dispatchEvent(new Event("change", { bubbles: true }));
+						});
+
+						wrapper.appendChild(button);
+					});
+				};
+
+				select.enhancedSyncVariationPills = sync;
+				select.addEventListener("change", sync);
+				window.setTimeout(sync, 20);
+			});
+
+			form.addEventListener("change", function () {
+				window.setTimeout(function () {
+					selects.forEach(function (select) {
+						if (typeof select.enhancedSyncVariationPills === "function") {
+							select.enhancedSyncVariationPills();
+						}
+					});
+				}, 0);
+			});
+
+			if (window.jQuery) {
+				const gallery = form.closest("[data-product-gallery]");
+				if (!gallery) {
+					return;
+				}
+
+				window.jQuery(form).on("found_variation", function (event, variation) {
+					const image = variation && variation.image ? variation.image : null;
+					const source = image && (image.full_src || image.src);
+					if (!source || typeof gallery.enhancedSetMainImage !== "function") {
+						return;
+					}
+
+					gallery.enhancedSetMainImage(source, image.alt || image.title || "");
+				});
+
+				window.jQuery(form).on("hide_variation reset_data", function () {
+					if (typeof gallery.enhancedResetMainImage === "function") {
+						gallery.enhancedResetMainImage();
+					}
+				});
+			}
+		});
+	}
+
+	function initSimpleOptionPickers() {
+		document.querySelectorAll("[data-simple-option-pickers]").forEach(function (pickerRoot) {
+			pickerRoot.querySelectorAll("[data-simple-option-picker]").forEach(function (picker) {
+				const input = picker.querySelector("[data-simple-attribute-input]");
+				const buttons = Array.from(picker.querySelectorAll("[data-simple-attribute-option]"));
+				if (!input || !buttons.length) {
+					return;
+				}
+
+				const sync = function () {
+					buttons.forEach(function (button) {
+						const isActive = button.dataset.value === input.value;
+						button.classList.toggle("is-active", isActive);
+						button.setAttribute("aria-pressed", String(isActive));
+					});
+				};
+
+				buttons.forEach(function (button) {
+					button.addEventListener("click", function () {
+						input.value = button.dataset.value || "";
+						sync();
+					});
+				});
+
+				sync();
+			});
+		});
+	}
+
+	function initWishlistToggle() {
+		const storageKey = "enhancedWishlist";
+		let savedIds = [];
+
+		try {
+			savedIds = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
+			if (!Array.isArray(savedIds)) {
+				savedIds = [];
+			}
+		} catch (error) {
+			savedIds = [];
+		}
+
+		const persist = function () {
+			try {
+				window.localStorage.setItem(storageKey, JSON.stringify(savedIds));
+			} catch (error) {
+				return;
+			}
+		};
+
+		document.querySelectorAll("[data-wishlist-toggle]").forEach(function (button) {
+			const productId = Number(button.dataset.productId || 0);
+			const label = button.querySelector("[data-wishlist-label]");
+			const icon = button.querySelector(".product-details__wishlist-icon");
+			if (!productId || !label) return;
+
+			const sync = function () {
+				const active = savedIds.includes(productId);
+				button.classList.toggle("is-active", active);
+				button.setAttribute("aria-pressed", String(active));
+				label.textContent = active ? "Saved to wishlist" : "Add to wishlist";
+
+				if (icon) {
+					icon.textContent = active ? "♥" : "♡";
+				}
+			};
+
+			button.addEventListener("click", function () {
+				if (savedIds.includes(productId)) {
+					savedIds = savedIds.filter(function (id) {
+						return id !== productId;
+					});
+				} else {
+					savedIds.push(productId);
+				}
+
+				persist();
+				sync();
+			});
+
+			sync();
+		});
+	}
+
+	function initWishlistTogglePatched() {
+		const storageKey = "enhancedWishlist";
+		let savedIds = [];
+
+		try {
+			savedIds = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
+			if (!Array.isArray(savedIds)) {
+				savedIds = [];
+			}
+		} catch (error) {
+			savedIds = [];
+		}
+
+		const persist = function () {
+			try {
+				window.localStorage.setItem(storageKey, JSON.stringify(savedIds));
+			} catch (error) {
+				return;
+			}
+		};
+
+		document.querySelectorAll("[data-wishlist-toggle]").forEach(function (button) {
+			const productId = Number(button.dataset.productId || 0);
+			const label = button.querySelector("[data-wishlist-label]");
+			const icon = button.querySelector(".product-details__wishlist-icon");
+			if (!productId || !label) return;
+
+			const sync = function () {
+				const active = savedIds.includes(productId);
+				button.classList.toggle("is-active", active);
+				button.setAttribute("aria-pressed", String(active));
+				label.textContent = active ? "Saved to wishlist" : "Add to wishlist";
+
+				if (icon) {
+					icon.textContent = active ? "\u2665" : "\u2661";
+				}
+			};
+
+			button.addEventListener("click", function () {
+				if (savedIds.includes(productId)) {
+					savedIds = savedIds.filter(function (id) {
+						return id !== productId;
+					});
+				} else {
+					savedIds.push(productId);
+				}
+
+				persist();
+				sync();
+			});
+
+			sync();
 		});
 	}
 
@@ -549,7 +952,35 @@
 			const track = slider.querySelector("[data-rail-track]");
 			const prevButton = slider.querySelector("[data-rail-prev]");
 			const nextButton = slider.querySelector("[data-rail-next]");
+			const autoplayDelay = Number(slider.dataset.railAutoplay || 0);
 			if (!track || !prevButton || !nextButton) return;
+
+			let autoplayId = 0;
+
+			const prepareAutoplayTrack = function () {
+				if (!autoplayDelay) {
+					return;
+				}
+
+				const originalItems = Array.from(track.children).filter(function (item) {
+					return item.dataset.railClone !== "true";
+				});
+
+				if (originalItems.length < 2) {
+					return;
+				}
+
+				let cloneIndex = 0;
+				const maxClones = Math.max(originalItems.length * 3, 10);
+
+				while (track.scrollWidth <= track.clientWidth + 8 && cloneIndex < maxClones) {
+					const source = originalItems[cloneIndex % originalItems.length];
+					const clone = source.cloneNode(true);
+					clone.dataset.railClone = "true";
+					track.appendChild(clone);
+					cloneIndex += 1;
+				}
+			};
 
 			const getStep = function () {
 				const firstItem = track.children[0];
@@ -568,17 +999,52 @@
 				nextButton.disabled = track.scrollLeft >= maxScroll;
 			};
 
+			const stopAutoplay = function () {
+				window.clearTimeout(autoplayId);
+			};
+
+			const queueAutoplay = function () {
+				stopAutoplay();
+
+				if (!autoplayDelay || track.scrollWidth <= track.clientWidth + 8) {
+					return;
+				}
+
+				autoplayId = window.setTimeout(function () {
+					const step = getStep() * 1.08;
+					const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 4);
+					const nextLeft = track.scrollLeft + step >= maxScroll ? 0 : track.scrollLeft + step;
+					track.scrollTo({ left: nextLeft, behavior: "smooth" });
+					queueAutoplay();
+				}, autoplayDelay);
+			};
+
 			prevButton.addEventListener("click", function () {
 				track.scrollBy({ left: -getStep() * 1.4, behavior: "smooth" });
+				queueAutoplay();
 			});
 
 			nextButton.addEventListener("click", function () {
 				track.scrollBy({ left: getStep() * 1.4, behavior: "smooth" });
+				queueAutoplay();
 			});
 
 			track.addEventListener("scroll", updateButtons, { passive: true });
-			window.addEventListener("resize", updateButtons);
+			window.addEventListener("resize", function () {
+				prepareAutoplayTrack();
+				updateButtons();
+			});
+			slider.addEventListener("mouseenter", stopAutoplay);
+			slider.addEventListener("mouseleave", queueAutoplay);
+			slider.addEventListener("focusin", stopAutoplay);
+			slider.addEventListener("focusout", function (event) {
+				if (!slider.contains(event.relatedTarget)) {
+					queueAutoplay();
+				}
+			});
+			prepareAutoplayTrack();
 			updateButtons();
+			queueAutoplay();
 		});
 	}
 

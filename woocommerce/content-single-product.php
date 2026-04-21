@@ -20,16 +20,72 @@ if ( ! $product instanceof WC_Product ) {
 	return;
 }
 
-$gallery_images     = enhanced_get_product_gallery_images( $product );
-$main_image         = reset( $gallery_images );
-$primary_category   = enhanced_get_product_primary_category_name( $product->get_id() );
-$stock_badge        = enhanced_get_product_stock_badge( $product );
-$rating_count       = (int) $product->get_rating_count();
-$average_rating     = (float) $product->get_average_rating();
-$short_description  = apply_filters( 'woocommerce_short_description', $post->post_excerpt );
-$description_text   = $short_description ? $short_description : wpautop( wp_kses_post( wp_trim_words( wp_strip_all_tags( $post->post_content ), 42 ) ) );
-$attributes         = array();
-$product_attributes = $product->get_attributes();
+$gallery_images          = enhanced_get_product_gallery_images( $product );
+$main_image              = reset( $gallery_images );
+$rating_count            = (int) $product->get_rating_count();
+$average_rating          = (float) $product->get_average_rating();
+$stock_badge             = enhanced_get_product_stock_badge( $product );
+$short_description       = apply_filters( 'woocommerce_short_description', $post->post_excerpt );
+$description_html        = $short_description ? $short_description : wpautop( wp_kses_post( wp_trim_words( wp_strip_all_tags( $post->post_content ), 42 ) ) );
+$default_category_id     = (int) get_option( 'default_product_cat', 0 );
+$primary_category        = '';
+$primary_category_url    = '';
+$collection_label        = enhanced_get_option( 'product_collection_label', __( 'Minimal modern collection', 'enhanced' ) );
+$size_guide_label        = enhanced_get_option( 'product_size_guide_label', __( 'Size guide', 'enhanced' ) );
+$size_guide_url          = enhanced_get_option( 'product_size_guide_url', '' );
+$details_heading         = enhanced_get_option( 'product_details_heading', __( 'Product details', 'enhanced' ) );
+$material_heading        = enhanced_get_option( 'product_material_heading', __( 'Material & care', 'enhanced' ) );
+$material_items          = enhanced_get_option_lines(
+	'product_material_items',
+	array(
+		__( 'Premium fabric blend', 'enhanced' ),
+		__( 'Machine wash or dry clean', 'enhanced' ),
+	)
+);
+$seller_heading          = enhanced_get_option( 'product_seller_heading', __( 'Sold by', 'enhanced' ) );
+$seller_name             = enhanced_get_option( 'product_seller_name', get_bloginfo( 'name' ) );
+$seller_meta             = enhanced_get_option( 'product_seller_meta', __( 'Fast dispatch and careful packaging.', 'enhanced' ) );
+$seller_points           = enhanced_get_option_lines(
+	'product_seller_points',
+	array(
+		__( 'Secure checkout', 'enhanced' ),
+		__( 'Carefully packed orders', 'enhanced' ),
+		__( 'Responsive customer support', 'enhanced' ),
+	)
+);
+$related_eyebrow         = enhanced_get_option( 'product_related_eyebrow', __( 'Similar products', 'enhanced' ) );
+$related_title           = enhanced_get_option( 'product_related_title', __( 'You may also like', 'enhanced' ) );
+$related_count           = max( 3, (int) enhanced_get_option( 'product_related_count', 8 ) );
+$related_columns         = (string) enhanced_get_option( 'product_related_columns', '4' );
+$related_autoplay        = max( 0, (int) enhanced_get_option( 'product_related_autoplay', 2000 ) );
+$related_product_ids     = wc_get_related_products( $product->get_id(), $related_count );
+$related_products        = array();
+$simple_selection_fields = enhanced_get_simple_product_selection_fields( $product );
+$attributes              = array();
+$product_attributes      = $product->get_attributes();
+$category_terms          = get_the_terms( $product->get_id(), 'product_cat' );
+$wishlist_label          = __( 'Add to wishlist', 'enhanced' );
+
+if ( ! in_array( $related_columns, array( '3', '4' ), true ) ) {
+	$related_columns = '4';
+}
+
+if ( ! empty( $category_terms ) && ! is_wp_error( $category_terms ) ) {
+	foreach ( $category_terms as $category_term ) {
+		if ( (int) $category_term->term_id === $default_category_id ) {
+			continue;
+		}
+
+		$primary_category     = $category_term->name;
+		$primary_category_url = get_term_link( $category_term );
+		break;
+	}
+
+	if ( ! $primary_category ) {
+		$primary_category     = $category_terms[0]->name;
+		$primary_category_url = get_term_link( $category_terms[0] );
+	}
+}
 
 foreach ( $product_attributes as $attribute ) {
 	if ( ! $attribute->get_visible() ) {
@@ -43,188 +99,93 @@ foreach ( $product_attributes as $attribute ) {
 		continue;
 	}
 
-	$attributes[] = array(
-		'label' => $label,
-		'value' => $value,
-	);
-
-	if ( count( $attributes ) >= 3 ) {
-		break;
+	if ( count( $attributes ) < 3 ) {
+		$attributes[] = array(
+			'label' => $label,
+			'value' => $value,
+		);
 	}
 }
-?>
 
-<article id="product-<?php the_ID(); ?>" <?php wc_product_class( 'enhanced-single-product', $product ); ?>>
-	<div class="page-banner page-banner--product">
-		<div class="container page-banner__inner page-banner__inner--product">
-			<div>
-				<p class="breadcrumb">
-					<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Home', 'enhanced' ); ?></a>
-					<span class="breadcrumb__sep">/</span>
-					<a href="<?php echo esc_url( enhanced_shop_url() ); ?>"><?php esc_html_e( 'Shop', 'enhanced' ); ?></a>
-					<?php if ( $primary_category ) : ?>
-						<span class="breadcrumb__sep">/</span>
-						<span><?php echo esc_html( $primary_category ); ?></span>
-					<?php endif; ?>
-				</p>
+foreach ( $related_product_ids as $related_product_id ) {
+	$related_product = wc_get_product( $related_product_id );
 
-				<?php if ( $primary_category ) : ?>
-					<span class="product-details__brand"><?php echo esc_html( $primary_category ); ?></span>
-				<?php endif; ?>
+	if ( ! $related_product instanceof WC_Product || ! $related_product->is_visible() ) {
+		continue;
+	}
 
-				<h1 class="page-banner__title page-banner__title--product"><?php the_title(); ?></h1>
-			</div>
+	$related_products[] = $related_product;
+}
 
-			<div class="page-banner__aside">
-				<span class="product-stock-badge product-stock-badge--<?php echo esc_attr( $stock_badge['class'] ); ?>">
-					<?php echo esc_html( $stock_badge['label'] ); ?>
-				</span>
-				<?php if ( $rating_count > 0 && $average_rating > 0 ) : ?>
-					<div class="page-banner__rating">
-						<?php echo wp_kses_post( wc_get_rating_html( $average_rating, $rating_count ) ); ?>
-						<span>
-							<?php
-							printf(
-								/* translators: %d review count */
-								esc_html( _n( '%d review', '%d reviews', $rating_count, 'enhanced' ) ),
-								$rating_count
-							);
-							?>
-						</span>
-					</div>
-				<?php endif; ?>
-			</div>
-		</div>
-	</div>
+if ( empty( $related_products ) ) {
+	$related_products = wc_get_products(
+		array(
+			'status'  => 'publish',
+			'limit'   => $related_count,
+			'exclude' => array( $product->get_id() ),
+			'orderby' => 'date',
+			'order'   => 'DESC',
+		)
+	);
+}
 
-	<div class="single-product-wrap">
-		<div class="container">
-			<div class="single-product-layout" data-product-gallery>
-				<div class="product-gallery-shell">
-					<div class="product-gallery">
-						<?php if ( count( $gallery_images ) > 1 ) : ?>
-							<div class="product-gallery__thumbs" aria-label="<?php esc_attr_e( 'Product gallery thumbnails', 'enhanced' ); ?>">
-								<?php foreach ( $gallery_images as $index => $image ) : ?>
-									<button
-										class="product-gallery__thumb<?php echo 0 === $index ? ' is-active' : ''; ?>"
-										type="button"
-										data-gallery-thumb
-										data-full-src="<?php echo esc_url( $image['large'] ); ?>"
-										data-alt="<?php echo esc_attr( $image['alt'] ?: get_the_title() ); ?>"
-										aria-pressed="<?php echo 0 === $index ? 'true' : 'false'; ?>"
-									>
-										<img src="<?php echo esc_url( $image['thumb'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ?: get_the_title() ); ?>" loading="lazy">
-									</button>
-								<?php endforeach; ?>
-							</div>
-						<?php endif; ?>
+if ( count( $related_products ) < $related_count ) {
+	$existing_ids = array_merge(
+		array( $product->get_id() ),
+		array_map(
+			static function ( $related_product_item ) {
+				return $related_product_item instanceof WC_Product ? $related_product_item->get_id() : 0;
+			},
+			$related_products
+		)
+	);
 
-						<div class="product-gallery__stage">
-							<div class="product-gallery__main">
-								<img
-									src="<?php echo esc_url( $main_image['large'] ); ?>"
-									alt="<?php echo esc_attr( $main_image['alt'] ?: get_the_title() ); ?>"
-									data-gallery-main
-								>
-							</div>
+	$fallback_products = wc_get_products(
+		array(
+			'status'  => 'publish',
+			'limit'   => $related_count - count( $related_products ),
+			'exclude' => array_filter( array_map( 'intval', $existing_ids ) ),
+			'orderby' => 'date',
+			'order'   => 'DESC',
+		)
+	);
 
-							<div class="product-gallery__notes">
-								<div>
-									<strong><?php esc_html_e( 'Designed for detail', 'enhanced' ); ?></strong>
-									<span><?php esc_html_e( 'A cleaner gallery with faster visual scanning on mobile and desktop.', 'enhanced' ); ?></span>
-								</div>
-								<div>
-									<strong><?php esc_html_e( 'Commerce ready', 'enhanced' ); ?></strong>
-									<span><?php esc_html_e( 'Add to cart, variations, and product data keep working with WooCommerce core.', 'enhanced' ); ?></span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+	if ( ! empty( $fallback_products ) ) {
+		$related_products = array_merge( $related_products, $fallback_products );
+	}
+}
 
-				<div class="product-details">
-					<div class="product-details__card">
-						<?php if ( $rating_count > 0 && $average_rating > 0 ) : ?>
-							<div class="product-details__rating">
-								<?php echo wp_kses_post( wc_get_rating_html( $average_rating, $rating_count ) ); ?>
-								<span>
-									<?php
-									printf(
-										/* translators: %d review count */
-										esc_html( _n( '%d review', '%d reviews', $rating_count, 'enhanced' ) ),
-										$rating_count
-									);
-									?>
-								</span>
-							</div>
-						<?php endif; ?>
+enhanced_get_template(
+	'single-product/layout',
+	compact(
+		'product',
+		'gallery_images',
+		'main_image',
+		'rating_count',
+		'average_rating',
+		'stock_badge',
+		'description_html',
+		'primary_category',
+		'primary_category_url',
+		'collection_label',
+		'size_guide_label',
+		'size_guide_url',
+		'details_heading',
+		'material_heading',
+		'material_items',
+		'seller_heading',
+		'seller_name',
+		'seller_meta',
+		'seller_points',
+		'related_eyebrow',
+		'related_title',
+		'related_columns',
+		'related_autoplay',
+		'related_products',
+		'simple_selection_fields',
+		'attributes',
+		'wishlist_label'
+	)
+);
 
-						<div class="product-details__price"><?php echo wp_kses_post( $product->get_price_html() ); ?></div>
-
-						<div class="product-details__desc">
-							<?php echo wp_kses_post( $description_text ); ?>
-						</div>
-
-						<div class="product-details__service-list">
-							<div class="product-service-card">
-								<strong><?php esc_html_e( 'Express dispatch', 'enhanced' ); ?></strong>
-								<span><?php esc_html_e( 'Clear fulfillment messaging with a layout that feels elevated instead of default.', 'enhanced' ); ?></span>
-							</div>
-							<div class="product-service-card">
-								<strong><?php esc_html_e( 'Responsive purchase flow', 'enhanced' ); ?></strong>
-								<span><?php esc_html_e( 'The add-to-cart area stays usable and balanced on smaller screens.', 'enhanced' ); ?></span>
-							</div>
-						</div>
-
-						<div class="product-details__purchase">
-							<?php woocommerce_template_single_add_to_cart(); ?>
-						</div>
-
-						<div class="product-meta-card">
-							<div class="product-meta-card__row">
-								<span><?php esc_html_e( 'SKU', 'enhanced' ); ?></span>
-								<strong><?php echo esc_html( $product->get_sku() ? $product->get_sku() : __( 'Made to order', 'enhanced' ) ); ?></strong>
-							</div>
-
-							<?php if ( $primary_category ) : ?>
-								<div class="product-meta-card__row">
-									<span><?php esc_html_e( 'Category', 'enhanced' ); ?></span>
-									<strong><?php echo esc_html( $primary_category ); ?></strong>
-								</div>
-							<?php endif; ?>
-
-							<?php if ( ! empty( $attributes ) ) : ?>
-								<?php foreach ( $attributes as $attribute ) : ?>
-									<div class="product-meta-card__row">
-										<span><?php echo esc_html( $attribute['label'] ); ?></span>
-										<strong><?php echo esc_html( $attribute['value'] ); ?></strong>
-									</div>
-								<?php endforeach; ?>
-							<?php endif; ?>
-						</div>
-
-						<div class="product-details__extra-hooks">
-							<?php do_action( 'woocommerce_single_product_summary' ); ?>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<?php woocommerce_output_product_data_tabs(); ?>
-
-			<section class="product-related">
-				<div class="section-heading">
-					<div>
-						<span class="section-heading__eyebrow"><?php esc_html_e( 'Related picks', 'enhanced' ); ?></span>
-						<h2 class="section-heading__title"><?php esc_html_e( 'More products in the same direction', 'enhanced' ); ?></h2>
-					</div>
-					<p class="section-heading__desc"><?php esc_html_e( 'The related products grid now inherits the same cleaner editorial card treatment for a more premium browsing flow.', 'enhanced' ); ?></p>
-				</div>
-
-				<?php woocommerce_output_related_products(); ?>
-			</section>
-		</div>
-	</div>
-</article>
-
-<?php do_action( 'woocommerce_after_single_product' ); ?>
+do_action( 'woocommerce_after_single_product' );

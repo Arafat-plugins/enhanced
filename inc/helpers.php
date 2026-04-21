@@ -51,6 +51,24 @@ function enhanced_get_option( $key, $default = '' ) {
 	return get_theme_mod( 'enhanced_' . $key, $default );
 }
 
+function enhanced_get_option_lines( $key, $default = array() ) {
+	$default_value = is_array( $default ) ? implode( "\n", $default ) : (string) $default;
+	$value         = (string) enhanced_get_option( $key, $default_value );
+	$lines         = preg_split( '/\r\n|\r|\n/', $value );
+
+	if ( ! is_array( $lines ) ) {
+		return (array) $default;
+	}
+
+	$lines = array_values(
+		array_filter(
+			array_map( 'trim', $lines )
+		)
+	);
+
+	return ! empty( $lines ) ? $lines : (array) $default;
+}
+
 function enhanced_shop_url() {
 	if ( enhanced_is_woo() ) {
 		$shop_id = wc_get_page_id( 'shop' );
@@ -206,6 +224,195 @@ function enhanced_get_product_stock_badge( $product ) {
 		'class' => 'is-in',
 		'label' => __( 'Ready to dispatch', 'enhanced' ),
 	);
+}
+
+function enhanced_get_attribute_picker_type( $attribute_name, $attribute_label = '' ) {
+	$haystack = strtolower( trim( $attribute_name . ' ' . $attribute_label ) );
+
+	if ( false !== strpos( $haystack, 'color' ) || false !== strpos( $haystack, 'colour' ) ) {
+		return 'color';
+	}
+
+	if ( false !== strpos( $haystack, 'size' ) ) {
+		return 'size';
+	}
+
+	return 'text';
+}
+
+function enhanced_is_light_hex_color( $hex_color ) {
+	$hex_color = strtolower( trim( (string) $hex_color ) );
+
+	if ( ! preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$/', $hex_color, $matches ) ) {
+		return false;
+	}
+
+	$hex = $matches[1];
+
+	if ( 3 === strlen( $hex ) ) {
+		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+	}
+
+	$red        = hexdec( substr( $hex, 0, 2 ) );
+	$green      = hexdec( substr( $hex, 2, 2 ) );
+	$blue       = hexdec( substr( $hex, 4, 2 ) );
+	$brightness = ( ( $red * 299 ) + ( $green * 587 ) + ( $blue * 114 ) ) / 1000;
+
+	return $brightness >= 214;
+}
+
+function enhanced_split_attribute_option_values( $raw_values ) {
+	$raw_values = is_array( $raw_values ) ? $raw_values : array( $raw_values );
+	$values     = array();
+
+	foreach ( $raw_values as $raw_value ) {
+		$raw_value = html_entity_decode( wp_strip_all_tags( (string) $raw_value ), ENT_QUOTES, get_bloginfo( 'charset' ) );
+		$raw_value = trim( preg_replace( '/\s+/', ' ', $raw_value ) );
+
+		if ( '' === $raw_value ) {
+			continue;
+		}
+
+		$parts = preg_split( '/\s*\|\s*/', $raw_value );
+
+		if ( ! is_array( $parts ) || count( $parts ) < 2 ) {
+			$parts = preg_split( '/\s*,\s*/', $raw_value );
+		}
+
+		if ( ! is_array( $parts ) || empty( $parts ) ) {
+			$parts = array( $raw_value );
+		}
+
+		foreach ( $parts as $part ) {
+			$part = trim( (string) $part );
+
+			if ( '' === $part ) {
+				continue;
+			}
+
+			$values[ strtolower( $part ) ] = $part;
+		}
+	}
+
+	return array_values( $values );
+}
+
+function enhanced_get_color_swatch_value( $color_name, $fallback = '#cccccc' ) {
+	$color_name     = trim( (string) $color_name );
+	$normalized_key = function_exists( 'enhanced_normalize_color_key' ) ? enhanced_normalize_color_key( $color_name ) : sanitize_title( $color_name );
+	$colors         = function_exists( 'enhanced_get_color_options' ) ? enhanced_get_color_options() : array();
+	$lookup         = array();
+
+	foreach ( $colors as $name => $hex ) {
+		$lookup[ strtolower( (string) $name ) ] = (string) $hex;
+
+		if ( function_exists( 'enhanced_normalize_color_key' ) ) {
+			$lookup[ enhanced_normalize_color_key( $name ) ] = (string) $hex;
+		}
+	}
+
+	if ( isset( $lookup[ strtolower( $color_name ) ] ) ) {
+		return $lookup[ strtolower( $color_name ) ];
+	}
+
+	if ( isset( $lookup[ $normalized_key ] ) ) {
+		return $lookup[ $normalized_key ];
+	}
+
+	return (string) $fallback;
+}
+
+function enhanced_get_simple_product_selection_fields( $product ) {
+	if ( ! enhanced_is_woo() || ! $product instanceof WC_Product || ! $product->is_type( 'simple' ) ) {
+		return array();
+	}
+
+	$fields             = array();
+	$product_attributes = $product->get_attributes();
+	$color_map          = function_exists( 'enhanced_get_color_options' ) ? enhanced_get_color_options() : array();
+
+	foreach ( $product_attributes as $attribute ) {
+		if ( ! $attribute instanceof WC_Product_Attribute || ! $attribute->get_visible() ) {
+			continue;
+		}
+
+		$attribute_name  = $attribute->get_name();
+		$attribute_label = wc_attribute_label( $attribute_name );
+		$attribute_type  = enhanced_get_attribute_picker_type( $attribute_name, $attribute_label );
+
+		if ( ! in_array( $attribute_type, array( 'color', 'size' ), true ) ) {
+			continue;
+		}
+
+		$raw_option_values = array();
+
+		if ( $attribute->is_taxonomy() ) {
+			$terms = wc_get_product_terms(
+				$product->get_id(),
+				$attribute_name,
+				array(
+					'fields' => 'all',
+				)
+			);
+
+			if ( is_wp_error( $terms ) ) {
+				$terms = array();
+			}
+
+			foreach ( $terms as $term ) {
+				$raw_option_values[] = $term->name;
+			}
+		} else {
+			foreach ( $attribute->get_options() as $option_value ) {
+				$raw_option_values[] = $option_value;
+			}
+		}
+
+		$fallback_value = $product->get_attribute( $attribute_name );
+
+		if ( $fallback_value ) {
+			$raw_option_values[] = $fallback_value;
+		}
+
+		$option_values = enhanced_split_attribute_option_values( $raw_option_values );
+
+		if ( count( $option_values ) < 2 ) {
+			continue;
+		}
+
+		$options = array();
+
+		foreach ( $option_values as $option_value ) {
+			$option = array(
+				'label' => $option_value,
+				'value' => $option_value,
+			);
+
+			if ( 'color' === $attribute_type ) {
+				$option['color'] = enhanced_get_color_swatch_value( $option_value );
+			}
+
+			$options[] = $option;
+		}
+
+		if ( count( $options ) < 2 ) {
+			continue;
+		}
+
+		$fields[] = array(
+			'key'            => sanitize_title( $attribute_name ),
+			'attribute_name' => $attribute_name,
+			'label'          => $attribute_label,
+			'type'           => $attribute_type,
+			'options'        => $options,
+		);
+	}
+
+	return $fields;
+}
+
+function enhanced_simple_product_has_selection_fields( $product ) {
+	return ! empty( enhanced_get_simple_product_selection_fields( $product ) );
 }
 
 function enhanced_get_page_intro_data() {
