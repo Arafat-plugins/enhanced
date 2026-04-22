@@ -18,6 +18,7 @@ $permalink           = get_permalink( $product_id );
 $image_id            = $product->get_image_id();
 $image_url           = $image_id ? wp_get_attachment_image_url( $image_id, 'enhanced-card' ) : wc_placeholder_img_src( 'enhanced-card' );
 $secondary_image_url = enhanced_get_product_secondary_image_url( $product );
+$has_secondary_image = ! empty( $secondary_image_url );
 $image_alt           = $image_id ? get_post_meta( $image_id, '_wp_attachment_image_alt', true ) : '';
 $primary_category    = enhanced_get_product_primary_category_name( $product_id );
 $on_sale             = $product->is_on_sale();
@@ -47,7 +48,7 @@ if ( $on_sale && $product->get_regular_price() && $product->get_sale_price() ) {
 }
 ?>
 
-<div class="product-card">
+<div class="product-card<?php echo $has_secondary_image ? ' product-card--has-secondary' : ''; ?>">
 	<div class="product-card__media">
 		<img
 			class="product-card__image product-card__image--primary"
@@ -56,7 +57,7 @@ if ( $on_sale && $product->get_regular_price() && $product->get_sale_price() ) {
 			loading="lazy"
 		>
 
-		<?php if ( $secondary_image_url ) : ?>
+		<?php if ( $has_secondary_image ) : ?>
 			<img
 				class="product-card__image product-card__image--secondary"
 				src="<?php echo esc_url( $secondary_image_url ); ?>"

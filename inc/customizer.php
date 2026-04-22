@@ -242,6 +242,128 @@ function enhanced_customizer( $wp_customize ) {
 		),
 	) );
 
+	$wp_customize->add_section( 'enhanced_single_product', array(
+		'title' => __( 'Single Product', 'enhanced' ),
+		'panel' => 'enhanced_panel',
+	) );
+
+	$single_product_controls = array(
+		'product_collection_label' => array(
+			'label'             => __( 'Collection label', 'enhanced' ),
+			'default'           => __( 'Minimal modern collection', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_size_guide_label' => array(
+			'label'             => __( 'Size guide label', 'enhanced' ),
+			'default'           => __( 'Size guide', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_size_guide_url' => array(
+			'label'             => __( 'Size guide URL', 'enhanced' ),
+			'default'           => '',
+			'type'              => 'url',
+			'sanitize_callback' => 'esc_url_raw',
+		),
+		'product_details_heading' => array(
+			'label'             => __( 'Details heading', 'enhanced' ),
+			'default'           => __( 'Product details', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_material_heading' => array(
+			'label'             => __( 'Material heading', 'enhanced' ),
+			'default'           => __( 'Material & care', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_material_items' => array(
+			'label'             => __( 'Material items', 'enhanced' ),
+			'default'           => __( "Premium fabric blend\nMachine wash or dry clean", 'enhanced' ),
+			'type'              => 'textarea',
+			'sanitize_callback' => 'sanitize_textarea_field',
+		),
+		'product_seller_heading' => array(
+			'label'             => __( 'Seller heading', 'enhanced' ),
+			'default'           => __( 'Sold by', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_seller_name' => array(
+			'label'             => __( 'Seller name', 'enhanced' ),
+			'default'           => get_bloginfo( 'name' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_seller_meta' => array(
+			'label'             => __( 'Seller meta line', 'enhanced' ),
+			'default'           => __( 'Fast dispatch and careful packaging.', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_seller_points' => array(
+			'label'             => __( 'Seller bullet points', 'enhanced' ),
+			'default'           => __( "Secure checkout\nCarefully packed orders\nResponsive customer support", 'enhanced' ),
+			'type'              => 'textarea',
+			'sanitize_callback' => 'sanitize_textarea_field',
+		),
+		'product_related_eyebrow' => array(
+			'label'             => __( 'Related section eyebrow', 'enhanced' ),
+			'default'           => __( 'Similar products', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_related_title' => array(
+			'label'             => __( 'Related section title', 'enhanced' ),
+			'default'           => __( 'You may also like', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'product_related_count' => array(
+			'label'             => __( 'Related product count', 'enhanced' ),
+			'default'           => 8,
+			'type'              => 'number',
+			'sanitize_callback' => 'absint',
+		),
+		'product_related_autoplay' => array(
+			'label'             => __( 'Related slider autoplay (ms)', 'enhanced' ),
+			'default'           => 2000,
+			'type'              => 'number',
+			'sanitize_callback' => 'absint',
+		),
+	);
+
+	foreach ( $single_product_controls as $id => $args ) {
+		$wp_customize->add_setting( 'enhanced_' . $id, array(
+			'default'           => $args['default'],
+			'sanitize_callback' => $args['sanitize_callback'],
+			'transport'         => 'refresh',
+		) );
+
+		$wp_customize->add_control( 'enhanced_' . $id, array(
+			'label'   => $args['label'],
+			'section' => 'enhanced_single_product',
+			'type'    => $args['type'],
+		) );
+	}
+
+	$wp_customize->add_setting( 'enhanced_product_related_columns', array(
+		'default'           => '4',
+		'sanitize_callback' => 'enhanced_sanitize_select',
+		'transport'         => 'refresh',
+	) );
+
+	$wp_customize->add_control( 'enhanced_product_related_columns', array(
+		'label'   => __( 'Related products visible on desktop', 'enhanced' ),
+		'section' => 'enhanced_single_product',
+		'type'    => 'select',
+		'choices' => array(
+			'4' => __( '4 cards', 'enhanced' ),
+			'3' => __( '3 cards', 'enhanced' ),
+		),
+	) );
+
 	$wp_customize->add_section( 'enhanced_shop', array(
 		'title' => __( 'Shop', 'enhanced' ),
 		'panel' => 'enhanced_panel',
