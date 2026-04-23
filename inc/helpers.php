@@ -51,6 +51,142 @@ function enhanced_get_option( $key, $default = '' ) {
 	return get_theme_mod( 'enhanced_' . $key, $default );
 }
 
+function enhanced_get_image_option_url( $key, $size = 'full', $default = '' ) {
+	$value = enhanced_get_option( $key, '' );
+
+	if ( is_numeric( $value ) && (int) $value > 0 ) {
+		$image_url = wp_get_attachment_image_url( (int) $value, $size );
+		return $image_url ?: $default;
+	}
+
+	if ( is_string( $value ) && '' !== trim( $value ) ) {
+		return esc_url_raw( $value );
+	}
+
+	return $default;
+}
+
+function enhanced_get_youtube_video_id( $url ) {
+	$parts = wp_parse_url( (string) $url );
+
+	if ( empty( $parts['host'] ) ) {
+		return '';
+	}
+
+	$host = strtolower( (string) $parts['host'] );
+	$path = isset( $parts['path'] ) ? trim( (string) $parts['path'], '/' ) : '';
+
+	if ( false !== strpos( $host, 'youtu.be' ) && '' !== $path ) {
+		return preg_replace( '/[^A-Za-z0-9_-]/', '', strtok( $path, '/' ) );
+	}
+
+	if ( false === strpos( $host, 'youtube.com' ) && false === strpos( $host, 'youtube-nocookie.com' ) ) {
+		return '';
+	}
+
+	if ( ! empty( $parts['query'] ) ) {
+		parse_str( (string) $parts['query'], $query_args );
+		if ( ! empty( $query_args['v'] ) ) {
+			return preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $query_args['v'] );
+		}
+	}
+
+	if ( preg_match( '~(?:embed|shorts)/([^/?&]+)~', $path, $matches ) ) {
+		return preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $matches[1] );
+	}
+
+	return '';
+}
+
+function enhanced_get_vimeo_video_id( $url ) {
+	$parts = wp_parse_url( (string) $url );
+
+	if ( empty( $parts['host'] ) ) {
+		return '';
+	}
+
+	$host = strtolower( (string) $parts['host'] );
+	$path = isset( $parts['path'] ) ? trim( (string) $parts['path'], '/' ) : '';
+
+	if ( false === strpos( $host, 'vimeo.com' ) ) {
+		return '';
+	}
+
+	if ( preg_match( '~(?:video/)?(\d+)~', $path, $matches ) ) {
+		return (string) $matches[1];
+	}
+
+	return '';
+}
+
+function enhanced_get_autoplay_embed_html( $url ) {
+	$url = trim( (string) $url );
+
+	if ( '' === $url ) {
+		return '';
+	}
+
+	$iframe_attrs = 'loading="eager" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"';
+	$iframe_title = esc_attr__( 'Hero video', 'enhanced' );
+	$youtube_id   = enhanced_get_youtube_video_id( $url );
+
+	if ( $youtube_id ) {
+		$src = add_query_arg(
+			array(
+				'autoplay'        => 1,
+				'mute'            => 1,
+				'loop'            => 1,
+				'playlist'        => $youtube_id,
+				'controls'        => 0,
+				'playsinline'     => 1,
+				'rel'             => 0,
+				'modestbranding'  => 1,
+				'iv_load_policy'  => 3,
+				'enablejsapi'     => 1,
+				'origin'          => home_url(),
+			),
+			'https://www.youtube.com/embed/' . rawurlencode( $youtube_id )
+		);
+
+		return sprintf(
+			'<iframe src="%1$s" title="%2$s" %3$s data-hero-autoplay-provider="youtube"></iframe>',
+			esc_url( $src ),
+			$iframe_title,
+			$iframe_attrs
+		);
+	}
+
+	$vimeo_id = enhanced_get_vimeo_video_id( $url );
+
+	if ( $vimeo_id ) {
+		$src = add_query_arg(
+			array(
+				'autoplay'  => 1,
+				'muted'     => 1,
+				'loop'      => 1,
+				'autopause' => 0,
+				'background'=> 1,
+			),
+			'https://player.vimeo.com/video/' . rawurlencode( $vimeo_id )
+		);
+
+		return sprintf(
+			'<iframe src="%1$s" title="%2$s" %3$s data-hero-autoplay-provider="vimeo"></iframe>',
+			esc_url( $src ),
+			$iframe_title,
+			$iframe_attrs
+		);
+	}
+
+	$embed = wp_oembed_get( $url, array( 'width' => 960, 'height' => 540 ) );
+
+	if ( ! $embed ) {
+		return '';
+	}
+
+	return $embed;
+}
+
 function enhanced_get_option_lines( $key, $default = array() ) {
 	$default_value = is_array( $default ) ? implode( "\n", $default ) : (string) $default;
 	$value         = (string) enhanced_get_option( $key, $default_value );
@@ -94,6 +230,109 @@ function enhanced_cart_url() {
 
 function enhanced_account_url() {
 	return enhanced_is_woo() ? wc_get_page_permalink( 'myaccount' ) : wp_login_url();
+}
+
+/**
+ * Returns up to $count popular/best-selling subcategories scored by total product sales.
+ * Falls back to all (non-default) categories if no subcategories exist.
+ *
+ * Each item: [ 'name', 'url', 'total_sales', 'thumbnail_url' ]
+ */
+/**
+ * Build slides array for a right-panel slider from Enhanced Settings storage.
+ * Storage: rp_{panel}_images (comma-separated IDs), rp_{panel}_title, rp_{panel}_opacity.
+ */
+function enhanced_build_rp_slides( $panel_key ) {
+	$ids_raw = enhanced_get_option( "rp_{$panel_key}_images", '' );
+	$ids     = array_filter( array_map( 'intval', explode( ',', (string) $ids_raw ) ) );
+
+	if ( empty( $ids ) ) {
+		return array();
+	}
+
+	$title   = sanitize_text_field( (string) enhanced_get_option( "rp_{$panel_key}_title", '' ) );
+	$opacity = min( 100, max( 0, (int) enhanced_get_option( "rp_{$panel_key}_opacity", 25 ) ) ) / 100;
+	$slides  = array();
+
+	foreach ( $ids as $img_id ) {
+		$url = wp_get_attachment_image_url( $img_id, 'enhanced-hero' );
+		if ( ! $url ) {
+			continue;
+		}
+		$slides[] = array(
+			'img'     => $url,
+			'title'   => $title,
+			'opacity' => $opacity,
+		);
+	}
+
+	return $slides;
+}
+
+function enhanced_get_popular_subcategories( $count = 2 ) {
+	if ( ! enhanced_is_woo() ) {
+		return array();
+	}
+
+	$default_cat = (int) get_option( 'default_product_cat', 0 );
+	$exclude     = $default_cat ? array( $default_cat ) : array();
+
+	$all_cats = get_terms( array(
+		'taxonomy'   => 'product_cat',
+		'hide_empty' => true,
+		'number'     => 0,
+		'exclude'    => $exclude,
+	) );
+
+	if ( empty( $all_cats ) || is_wp_error( $all_cats ) ) {
+		return array();
+	}
+
+	// Prefer real sub-categories (parent > 0); fall back to all categories.
+	$pool = array_filter( $all_cats, function ( $t ) { return $t->parent > 0; } );
+	if ( empty( $pool ) ) {
+		$pool = $all_cats;
+	}
+
+	$scored = array();
+	foreach ( $pool as $term ) {
+		$product_ids = get_posts( array(
+			'post_type'      => 'product',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'tax_query'      => array( array(
+				'taxonomy' => 'product_cat',
+				'field'    => 'term_id',
+				'terms'    => $term->term_id,
+			) ),
+		) );
+
+		$total_sales = 0;
+		foreach ( $product_ids as $pid ) {
+			$total_sales += (int) get_post_meta( $pid, 'total_sales', true );
+		}
+
+		$thumbnail_id  = get_term_meta( $term->term_id, 'thumbnail_id', true );
+		$thumbnail_url = $thumbnail_id
+			? wp_get_attachment_image_url( (int) $thumbnail_id, 'enhanced-card' )
+			: '';
+
+		$term_link = get_term_link( $term );
+
+		$scored[] = array(
+			'name'          => $term->name,
+			'url'           => is_wp_error( $term_link ) ? '' : $term_link,
+			'total_sales'   => $total_sales,
+			'thumbnail_url' => $thumbnail_url,
+		);
+	}
+
+	usort( $scored, function ( $a, $b ) {
+		return $b['total_sales'] - $a['total_sales'];
+	} );
+
+	return array_slice( $scored, 0, $count );
 }
 
 function enhanced_get_product_primary_category_name( $product_id = 0 ) {

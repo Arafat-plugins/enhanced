@@ -1,19 +1,15 @@
 <?php
 /**
- * Theme header with utility bar, primary navigation, and search drawer.
+ * Theme header — LUXINA layout: logo | search | icons + nav bar.
  *
  * @package Enhanced
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$util_text      = enhanced_get_option( 'utility_text', __( 'Free shipping on orders over $100', 'enhanced' ) );
-$util_link      = enhanced_get_option( 'utility_link', '' );
 $contact_email  = enhanced_get_option( 'contact_email', 'hello@enhanced.store' );
 $contact_phone  = enhanced_get_option( 'contact_phone', '+1 (800) 000-0000' );
-$contact_email_label = $contact_email ? antispambot( $contact_email ) : '';
-$contact_mailto      = $contact_email ? sanitize_email( $contact_email ) : '';
-$contact_tel    = $contact_phone ? preg_replace( '/[^0-9\+]/', '', $contact_phone ) : '';
+$contact_mailto = $contact_email ? sanitize_email( $contact_email ) : '';
 ?>
 <!doctype html>
 <html <?php language_attributes(); ?>>
@@ -27,58 +23,11 @@ $contact_tel    = $contact_phone ? preg_replace( '/[^0-9\+]/', '', $contact_phon
 
 <a class="screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'enhanced' ); ?></a>
 
-<div class="utility-bar">
-	<div class="container utility-bar__inner">
-		<div class="utility-bar__left">
-			<div class="utility-bar__icon-links">
-				<?php if ( $contact_mailto ) : ?>
-					<a href="mailto:<?php echo esc_attr( $contact_mailto ); ?>"><?php echo esc_html( $contact_email_label ); ?></a>
-				<?php endif; ?>
-				<?php if ( $contact_tel ) : ?>
-					<a href="tel:<?php echo esc_attr( $contact_tel ); ?>"><?php echo esc_html( $contact_phone ); ?></a>
-				<?php endif; ?>
-			</div>
-		</div>
-
-		<div class="utility-bar__promo">
-			<?php if ( $util_link ) : ?>
-				<a href="<?php echo esc_url( $util_link ); ?>"><?php echo esc_html( $util_text ); ?></a>
-			<?php else : ?>
-				<?php echo esc_html( $util_text ); ?>
-			<?php endif; ?>
-		</div>
-
-		<div class="utility-bar__right">
-			<?php if ( has_nav_menu( 'utility' ) ) : ?>
-				<?php
-				wp_nav_menu( array(
-					'theme_location' => 'utility',
-					'menu_class'     => 'utility-nav',
-					'container'      => false,
-					'depth'          => 1,
-					'fallback_cb'    => false,
-					'items_wrap'     => '<nav class="utility-bar__icon-links">%3$s</nav>',
-				) );
-				?>
-			<?php else : ?>
-				<a class="utility-bar__link" href="<?php echo esc_url( enhanced_account_url() ); ?>">
-					<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-						<circle cx="8" cy="5.5" r="3" stroke="currentColor" stroke-width="1.4"/>
-						<path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-					</svg>
-					<?php esc_html_e( 'My Account', 'enhanced' ); ?>
-				</a>
-				<a class="utility-bar__link" href="<?php echo esc_url( enhanced_cart_url() ); ?>">
-					<?php esc_html_e( 'Cart', 'enhanced' ); ?>
-					(<?php echo esc_html( enhanced_cart_count() ); ?>)
-				</a>
-			<?php endif; ?>
-		</div>
-	</div>
-</div>
-
 <header class="site-header" data-site-header>
+
+	<!-- Top row: logo | inline search | icons -->
 	<div class="container site-header__inner">
+
 		<button
 			class="site-header__toggle"
 			type="button"
@@ -95,15 +44,52 @@ $contact_tel    = $contact_phone ? preg_replace( '/[^0-9\+]/', '', $contact_phon
 				<?php the_custom_logo(); ?>
 			<?php else : ?>
 				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
-					<svg class="site-header__logo-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-						<path d="M14 2l3.09 8.26L24 12l-6.91 1.74L14 22l-3.09-8.26L4 12l6.91-1.74L14 2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-					</svg>
 					<span class="site-header__logo-text"><?php bloginfo( 'name' ); ?></span>
 				</a>
 			<?php endif; ?>
 		</div>
 
-		<nav id="primary-nav" class="site-header__nav" data-menu-panel aria-label="<?php esc_attr_e( 'Primary', 'enhanced' ); ?>">
+		<!-- Inline visible search -->
+		<form class="site-header__inline-search" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
+			<svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+				<circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+				<path d="M12.5 12.5L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+			</svg>
+			<input
+				class="site-header__inline-search__input"
+				type="search"
+				name="s"
+				placeholder="<?php esc_attr_e( 'Search', 'enhanced' ); ?>"
+				value="<?php echo esc_attr( get_search_query() ); ?>"
+				autocomplete="off"
+			>
+			<?php if ( enhanced_is_woo() ) : ?>
+				<input type="hidden" name="post_type" value="product">
+			<?php endif; ?>
+		</form>
+
+		<div class="site-header__actions">
+			<a class="header-icon-btn" href="<?php echo esc_url( enhanced_cart_url() ); ?>" aria-label="<?php esc_attr_e( 'Cart', 'enhanced' ); ?>">
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+					<path d="M4 7h12l-1.5 9h-9L4 7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+					<path d="M8 7V6a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+				</svg>
+				<span class="header-cart__count" data-cart-count><?php echo esc_html( enhanced_cart_count() ); ?></span>
+			</a>
+
+			<a class="header-icon-btn header-icon-btn--account" href="<?php echo esc_url( enhanced_account_url() ); ?>" aria-label="<?php esc_attr_e( 'My Account', 'enhanced' ); ?>">
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+					<circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+					<path d="M3 18c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+				</svg>
+				<span class="header-account-label"><?php esc_html_e( 'Account', 'enhanced' ); ?></span>
+			</a>
+		</div>
+	</div>
+
+	<!-- Nav bar row -->
+	<div class="site-header__nav-bar">
+		<nav id="primary-nav" class="container site-header__nav" data-menu-panel aria-label="<?php esc_attr_e( 'Primary', 'enhanced' ); ?>">
 			<?php
 			if ( has_nav_menu( 'primary' ) ) {
 				wp_nav_menu( array(
@@ -115,53 +101,19 @@ $contact_tel    = $contact_phone ? preg_replace( '/[^0-9\+]/', '', $contact_phon
 					'items_wrap'     => '<ul id="%1$s" class="%2$s">%3$s</ul>',
 				) );
 			} else {
-				echo '<ul class="primary-nav">';
-				echo '<li><a href="' . esc_url( home_url( '/' ) ) . '">' . esc_html__( 'Home', 'enhanced' ) . '</a></li>';
-
-				if ( enhanced_is_woo() ) {
-					$shop_id = wc_get_page_id( 'shop' );
-
-					if ( $shop_id > 0 ) {
-						echo '<li><a href="' . esc_url( get_permalink( $shop_id ) ) . '">' . esc_html__( 'Shop', 'enhanced' ) . '</a></li>';
-					}
+				$pages = wp_list_pages( array(
+					'title_li' => '',
+					'depth'    => 2,
+					'echo'     => 0,
+				) );
+				if ( $pages ) {
+					echo '<ul class="primary-nav">' . $pages . '</ul>';
 				}
-
-				echo '<li><a href="' . esc_url( home_url( '/collections/' ) ) . '">' . esc_html__( 'Collections', 'enhanced' ) . '</a></li>';
-				echo '<li><a href="' . esc_url( home_url( '/about/' ) ) . '">' . esc_html__( 'About', 'enhanced' ) . '</a></li>';
-				echo '</ul>';
 			}
 			?>
 		</nav>
-
-		<div class="site-header__actions">
-			<button
-				class="header-icon-btn"
-				type="button"
-				aria-label="<?php esc_attr_e( 'Search', 'enhanced' ); ?>"
-				data-search-trigger
-			>
-				<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-					<circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-					<path d="M12.5 12.5L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-				</svg>
-			</button>
-
-			<a class="header-icon-btn" href="<?php echo esc_url( enhanced_account_url() ); ?>" aria-label="<?php esc_attr_e( 'My Account', 'enhanced' ); ?>">
-				<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-					<circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.5"/>
-					<path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-				</svg>
-			</a>
-
-			<a class="header-icon-btn" href="<?php echo esc_url( enhanced_cart_url() ); ?>" aria-label="<?php esc_attr_e( 'Cart', 'enhanced' ); ?>">
-				<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-					<path d="M4 6h10l-1 8H5L4 6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-					<path d="M7 6V5a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-				</svg>
-				<span class="header-cart__count" data-cart-count><?php echo esc_html( enhanced_cart_count() ); ?></span>
-			</a>
-		</div>
 	</div>
+
 </header>
 
 <div class="search-drawer" id="search-drawer" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Search', 'enhanced' ); ?>" hidden data-search-drawer>

@@ -18,3 +18,4 @@ require ENHANCED_DIR . 'inc/enqueue.php';
 require ENHANCED_DIR . 'inc/woocommerce.php';
 require ENHANCED_DIR . 'inc/shop-filters.php';
 require ENHANCED_DIR . 'inc/customizer.php';
+require ENHANCED_DIR . 'inc/admin-page.php';

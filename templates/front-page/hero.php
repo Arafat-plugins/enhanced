@@ -1,117 +1,164 @@
 <?php
 /**
- * Front page hero section.
+ * Front page hero.
  *
  * @package Enhanced
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$fallback_image = $hero_image_url;
+// Determine media mode first. Uploaded or external video takes priority.
+$hero_video_src = $hero_video_upload_url ?: $hero_external_video_url;
+$show_video     = in_array( $hero_media_type, array( 'video', 'external-video' ), true )
+	&& ! empty( $hero_video_src );
 
-if ( ! $fallback_image && enhanced_is_woo() && $hero_product instanceof WC_Product ) {
-	$fallback_image = $hero_product->get_image_id() ? wp_get_attachment_image_url( $hero_product->get_image_id(), 'enhanced-hero' ) : wc_placeholder_img_src( 'enhanced-hero' );
+// Resolve image fallback only when not in video mode.
+$uploaded_image       = $hero_image_url;
+$latest_product_image = '';
+$left_panel_image    = '';
+
+if ( enhanced_is_woo() && $hero_product instanceof WC_Product ) {
+	$latest_product_image = $hero_product->get_image_id()
+		? wp_get_attachment_image_url( $hero_product->get_image_id(), 'enhanced-hero' )
+		: wc_placeholder_img_src( 'enhanced-hero' );
 }
 
-if ( ! $fallback_image ) {
-	$fallback_image = $reference_visual_url;
+if ( ! $show_video ) {
+	$left_panel_image = $uploaded_image ?: $latest_product_image;
+
+	if ( ! $left_panel_image ) {
+		$left_panel_image = $reference_visual_url;
+	}
 }
+
+$hero_discount         = enhanced_get_option( 'hero_discount', '50' );
+$hero_overlay_color   = enhanced_get_option( 'hero_overlay_color', '#000000' );
+$hero_overlay_opacity = min( 100, max( 0, (int) enhanced_get_option( 'hero_overlay_opacity', 0 ) ) );
+
+// Build right-panel slides from Enhanced Settings › Right Panel Slides.
+$rp_tr_interval = max( 2000, (int) enhanced_get_option( 'rp_tr_interval', 4000 ) );
+$rp_br_interval = max( 2000, (int) enhanced_get_option( 'rp_br_interval', 5000 ) );
+
+$rp_tr_slides = enhanced_build_rp_slides( 'tr' );
+$rp_br_slides = enhanced_build_rp_slides( 'br' );
 ?>
 
-<section class="landing-hero landing-hero--<?php echo esc_attr( sanitize_html_class( $hero_media_type ) ); ?>">
-	<div class="container">
-		<div class="landing-hero__grid">
-			<div class="landing-hero__content">
-				<?php if ( $hero_eyebrow ) : ?>
-					<span class="landing-hero__eyebrow"><?php echo esc_html( $hero_eyebrow ); ?></span>
-				<?php endif; ?>
+<div class="lx-hero-grid">
+	<div class="lx-hero-left">
+		<div class="lx-hero-left__content">
+			<?php if ( $hero_eyebrow ) : ?>
+				<span class="lx-hero-barcode" aria-hidden="true">
+					<svg class="lx-hero-barcode__svg" viewBox="0 0 80 28" fill="currentColor" aria-hidden="true">
+						<rect x="0" y="0" width="3" height="28"/><rect x="5" y="0" width="1" height="28"/>
+						<rect x="8" y="0" width="2" height="28"/><rect x="12" y="0" width="4" height="28"/>
+						<rect x="18" y="0" width="1" height="28"/><rect x="21" y="0" width="3" height="28"/>
+						<rect x="26" y="0" width="2" height="28"/><rect x="30" y="0" width="1" height="28"/>
+						<rect x="33" y="0" width="4" height="28"/><rect x="39" y="0" width="1" height="28"/>
+						<rect x="42" y="0" width="2" height="28"/><rect x="46" y="0" width="3" height="28"/>
+						<rect x="51" y="0" width="1" height="28"/><rect x="54" y="0" width="2" height="28"/>
+						<rect x="58" y="0" width="4" height="28"/><rect x="64" y="0" width="1" height="28"/>
+						<rect x="67" y="0" width="3" height="28"/><rect x="72" y="0" width="2" height="28"/>
+						<rect x="76" y="0" width="4" height="28"/>
+					</svg>
+					<span class="lx-hero-barcode__label"><?php echo esc_html( $hero_eyebrow ); ?></span>
+				</span>
+			<?php endif; ?>
 
-				<?php if ( $hero_title ) : ?>
-					<h1 class="landing-hero__title"><?php echo esc_html( $hero_title ); ?></h1>
-				<?php endif; ?>
-
-				<?php if ( $hero_description ) : ?>
-					<p class="landing-hero__desc"><?php echo esc_html( $hero_description ); ?></p>
-				<?php endif; ?>
-
-				<div class="landing-hero__actions">
-					<?php if ( $hero_primary_label ) : ?>
-						<a class="btn btn--accent" href="<?php echo esc_url( $hero_primary_url ?: $shop_url ); ?>"><?php echo esc_html( $hero_primary_label ); ?></a>
-					<?php endif; ?>
-
-					<?php if ( $hero_secondary_label ) : ?>
-						<a class="btn btn--outline" href="<?php echo esc_url( $hero_secondary_url ?: home_url( '/about/' ) ); ?>"><?php echo esc_html( $hero_secondary_label ); ?></a>
-					<?php endif; ?>
-				</div>
+			<div class="lx-hero-discount">
+				<?php echo esc_html( $hero_discount ); ?><sup>%<br><?php esc_html_e( 'OFF', 'enhanced' ); ?></sup>
 			</div>
 
-			<div class="landing-hero__media">
-				<?php if ( 'video' === $hero_media_type && $hero_video_upload_url ) : ?>
-					<div class="landing-hero__video-shell">
-						<video class="landing-hero__video" autoplay muted loop playsinline>
-							<source src="<?php echo esc_url( $hero_video_upload_url ); ?>">
-						</video>
-					</div>
-				<?php elseif ( 'external-video' === $hero_media_type && $hero_external_video_url ) : ?>
-					<div class="landing-hero__video-shell">
-						<?php if ( $hero_external_is_video ) : ?>
-							<video class="landing-hero__video" autoplay muted loop playsinline>
-								<source src="<?php echo esc_url( $hero_external_video_url ); ?>">
-							</video>
-						<?php elseif ( $hero_external_embed ) : ?>
-							<div class="landing-hero__embed">
-								<?php echo wp_kses_post( $hero_external_embed ); ?>
-							</div>
-						<?php endif; ?>
-					</div>
-				<?php elseif ( 'slider' === $hero_media_type && ! empty( $hero_slider_items ) ) : ?>
-					<div class="landing-hero-slider" data-hero-slider>
-						<div class="landing-hero-slider__stage">
-							<?php foreach ( $hero_slider_items as $index => $slider_product ) : ?>
-								<?php
-								$slider_image = $slider_product->get_image_id() ? wp_get_attachment_image_url( $slider_product->get_image_id(), 'enhanced-hero' ) : wc_placeholder_img_src( 'enhanced-hero' );
-								$slider_cat   = enhanced_get_product_primary_category_name( $slider_product->get_id() );
-								?>
-								<article class="landing-hero-slider__slide<?php echo 0 === $index ? ' is-active' : ''; ?>" data-hero-slide>
-									<div class="landing-hero-slider__image">
-										<img src="<?php echo esc_url( $slider_image ); ?>" alt="<?php echo esc_attr( $slider_product->get_name() ); ?>" loading="<?php echo 0 === $index ? 'eager' : 'lazy'; ?>">
-									</div>
-									<div class="landing-hero-slider__caption">
-										<?php if ( $slider_cat ) : ?>
-											<span><?php echo esc_html( $slider_cat ); ?></span>
-										<?php endif; ?>
-										<strong><?php echo esc_html( $slider_product->get_name() ); ?></strong>
-										<em><?php echo wp_kses_post( $slider_product->get_price_html() ); ?></em>
-									</div>
-								</article>
-							<?php endforeach; ?>
-						</div>
+			<?php if ( $hero_description ) : ?>
+				<p class="lx-hero-desc"><?php echo esc_html( $hero_description ); ?></p>
+			<?php endif; ?>
 
-						<?php if ( count( $hero_slider_items ) > 1 ) : ?>
-							<div class="landing-hero-slider__thumbs">
-								<?php foreach ( $hero_slider_items as $index => $slider_product ) : ?>
-									<?php
-									$thumb_image = $slider_product->get_image_id() ? wp_get_attachment_image_url( $slider_product->get_image_id(), 'enhanced-thumb' ) : wc_placeholder_img_src( 'enhanced-thumb' );
-									?>
-									<button class="landing-hero-slider__thumb<?php echo 0 === $index ? ' is-active' : ''; ?>" type="button" data-hero-thumb aria-pressed="<?php echo 0 === $index ? 'true' : 'false'; ?>">
-										<img src="<?php echo esc_url( $thumb_image ); ?>" alt="<?php echo esc_attr( $slider_product->get_name() ); ?>" loading="lazy">
-									</button>
-								<?php endforeach; ?>
-							</div>
-						<?php endif; ?>
+			<?php if ( $hero_primary_label ) : ?>
+				<a class="lx-btn lx-btn--black lx-btn--pill"
+					href="<?php echo esc_url( $hero_primary_url ?: $shop_url ); ?>">
+					<?php echo esc_html( $hero_primary_label ); ?>
+					<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+				</a>
+			<?php endif; ?>
+		</div>
+
+		<div class="lx-hero-left__media">
+			<?php if ( $show_video ) : ?>
+				<?php if ( $hero_video_upload_url ) : ?>
+					<video class="lx-hero-left__model" autoplay muted loop playsinline>
+						<source src="<?php echo esc_url( $hero_video_upload_url ); ?>">
+					</video>
+				<?php elseif ( $hero_external_is_video ) : ?>
+					<video class="lx-hero-left__model" autoplay muted loop playsinline>
+						<source src="<?php echo esc_url( $hero_external_video_url ); ?>">
+					</video>
+				<?php elseif ( $hero_external_embed ) : ?>
+					<div class="lx-hero-left__model lx-hero-left__embed">
+						<?php echo $hero_external_embed; // phpcs:ignore WordPress.Security.EscapeOutput ?>
 					</div>
 				<?php else : ?>
-					<div class="landing-hero__image-shell">
-						<?php if ( $fallback_image ) : ?>
-							<img src="<?php echo esc_url( $fallback_image ); ?>" alt="<?php echo esc_attr( $hero_title ? $hero_title : get_bloginfo( 'name' ) ); ?>" loading="eager">
-						<?php else : ?>
-							<div class="landing-hero__fallback-note">
-								<span><?php esc_html_e( 'Upload hero media from theme settings', 'enhanced' ); ?></span>
-							</div>
-						<?php endif; ?>
-					</div>
+					<div class="lx-hero-left__fallback"></div>
+				<?php endif; ?>
+			<?php elseif ( $left_panel_image ) : ?>
+				<img class="lx-hero-left__model"
+					src="<?php echo esc_url( $left_panel_image ); ?>"
+					alt="<?php echo esc_attr( $hero_title ?: get_bloginfo( 'name' ) ); ?>"
+					loading="eager">
+			<?php else : ?>
+				<div class="lx-hero-left__fallback"></div>
+			<?php endif; ?>
+		</div>
+
+		<?php if ( $hero_overlay_opacity > 0 ) : ?>
+		<div class="lx-hero-left__overlay"
+		     style="background:<?php echo esc_attr( $hero_overlay_color ); ?>;opacity:<?php echo esc_attr( $hero_overlay_opacity / 100 ); ?>;"></div>
+		<?php endif; ?>
+	</div>
+
+	<?php /* Top-right slider */ ?>
+	<div class="lx-hero-tr lx-rp-slider" data-lx-rp-slider
+	     data-interval="<?php echo esc_attr( $rp_tr_interval ); ?>">
+		<?php if ( ! empty( $rp_tr_slides ) ) : ?>
+			<?php foreach ( $rp_tr_slides as $rp_i => $rp_slide ) : ?>
+			<div class="lx-rp-slide<?php echo 0 === $rp_i ? ' is-active' : ''; ?>"
+			     style="--rp-opacity:<?php echo esc_attr( $rp_slide['opacity'] ); ?>">
+				<img class="lx-rp-slide__img"
+				     src="<?php echo esc_url( $rp_slide['img'] ); ?>"
+				     alt=""
+				     loading="<?php echo 0 === $rp_i ? 'eager' : 'lazy'; ?>">
+				<div class="lx-rp-slide__overlay"></div>
+				<?php if ( '' !== $rp_slide['title'] ) : ?>
+					<p class="lx-rp-slide__title"><?php echo esc_html( $rp_slide['title'] ); ?></p>
 				<?php endif; ?>
 			</div>
-		</div>
+			<?php endforeach; ?>
+		<?php else : ?>
+			<div class="lx-rp-slide is-active">
+				<div class="lx-rp-slide__empty"></div>
+			</div>
+		<?php endif; ?>
 	</div>
-</section>
+
+	<?php /* Bottom-right slider */ ?>
+	<div class="lx-hero-br lx-rp-slider" data-lx-rp-slider
+	     data-interval="<?php echo esc_attr( $rp_br_interval ); ?>">
+		<?php if ( ! empty( $rp_br_slides ) ) : ?>
+			<?php foreach ( $rp_br_slides as $rp_i => $rp_slide ) : ?>
+			<div class="lx-rp-slide<?php echo 0 === $rp_i ? ' is-active' : ''; ?>"
+			     style="--rp-opacity:<?php echo esc_attr( $rp_slide['opacity'] ); ?>">
+				<img class="lx-rp-slide__img"
+				     src="<?php echo esc_url( $rp_slide['img'] ); ?>"
+				     alt=""
+				     loading="<?php echo 0 === $rp_i ? 'eager' : 'lazy'; ?>">
+				<div class="lx-rp-slide__overlay"></div>
+				<?php if ( '' !== $rp_slide['title'] ) : ?>
+					<p class="lx-rp-slide__title"><?php echo esc_html( $rp_slide['title'] ); ?></p>
+				<?php endif; ?>
+			</div>
+			<?php endforeach; ?>
+		<?php else : ?>
+			<div class="lx-rp-slide is-active">
+				<div class="lx-rp-slide__empty"></div>
+			</div>
+		<?php endif; ?>
+	</div>
+</div><!-- .lx-hero-grid -->
