@@ -23,11 +23,10 @@ function enhanced_get_product_categories() {
 }
 
 /**
- * Get registered color attribute terms (from pa_color taxonomy).
- * Falls back to a sensible default palette if no attribute exists.
+ * Default color palette used across filters and product swatches.
  */
-function enhanced_get_color_options() {
-	$defaults = array(
+function enhanced_get_default_color_options() {
+	return array(
 		'Black'  => '#000000',
 		'White'  => '#ffffff',
 		'Red'    => '#e53e3e',
@@ -41,8 +40,29 @@ function enhanced_get_color_options() {
 		'Brown'  => '#8b5a2b',
 		'Beige'  => '#d4c5a1',
 		'Grey'   => '#6b7280',
+		'Gray'   => '#6b7280',
 		'Cream'  => '#f5e6d3',
+		'Orange' => '#f97316',
+		'Purple' => '#7c3aed',
 	);
+}
+
+/**
+ * Normalize a color label into a stable lookup key.
+ */
+function enhanced_normalize_color_key( $color_name ) {
+	$color_name = strtolower( trim( html_entity_decode( wp_strip_all_tags( (string) $color_name ), ENT_QUOTES, get_bloginfo( 'charset' ) ) ) );
+	$color_name = preg_replace( '/[^a-z0-9]+/', '-', $color_name );
+
+	return trim( (string) $color_name, '-' );
+}
+
+/**
+ * Get registered color attribute terms (from pa_color taxonomy).
+ * Falls back to a sensible default palette if no attribute exists.
+ */
+function enhanced_get_color_options() {
+	$defaults = enhanced_get_default_color_options();
 
 	if ( ! enhanced_is_woo() || ! taxonomy_exists( 'pa_color' ) ) {
 		return $defaults;
@@ -56,8 +76,18 @@ function enhanced_get_color_options() {
 	$out = array();
 	foreach ( $terms as $t ) {
 		// Pulls swatch value from term meta if set (e.g. via Woo's attribute color meta).
-		$swatch = get_term_meta( $t->term_id, 'product_attribute_color', true );
-		$out[ $t->name ] = $swatch ?: '#cccccc';
+		$swatch        = get_term_meta( $t->term_id, 'product_attribute_color', true );
+		$normalized    = enhanced_normalize_color_key( $t->name );
+		$default_swatch = '#cccccc';
+
+		foreach ( $defaults as $default_name => $default_hex ) {
+			if ( enhanced_normalize_color_key( $default_name ) === $normalized ) {
+				$default_swatch = $default_hex;
+				break;
+			}
+		}
+
+		$out[ $t->name ] = $swatch ?: $default_swatch;
 	}
 	return $out;
 }
