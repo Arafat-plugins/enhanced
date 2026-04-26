@@ -70,6 +70,50 @@ if ( enhanced_is_woo() ) {
 	}
 }
 
+// Detect gendered top-level categories and build category-specific product sets.
+$women_cat      = null;
+$men_cat        = null;
+$women_products = array();
+$men_products   = array();
+
+if ( enhanced_is_woo() ) {
+	foreach ( array( 'women', 'womens', 'woman' ) as $s ) {
+		$t = get_term_by( 'slug', $s, 'product_cat' );
+		if ( $t && ! is_wp_error( $t ) ) { $women_cat = $t; break; }
+	}
+	foreach ( array( 'men', 'mens', 'man' ) as $s ) {
+		$t = get_term_by( 'slug', $s, 'product_cat' );
+		if ( $t && ! is_wp_error( $t ) ) { $men_cat = $t; break; }
+	}
+
+	if ( $women_cat ) {
+		$on_sale = wc_get_product_ids_on_sale();
+		$cat_ids = wc_get_products( array(
+			'status'   => 'publish',
+			'limit'    => -1,
+			'return'   => 'ids',
+			'category' => array( $women_cat->slug ),
+		) );
+		$w_ids = array_values( array_intersect( $on_sale, $cat_ids ) );
+		$women_products = ! empty( $w_ids )
+			? wc_get_products( array( 'status' => 'publish', 'limit' => 8, 'include' => array_slice( $w_ids, 0, 8 ) ) )
+			: wc_get_products( array( 'status' => 'publish', 'limit' => 8, 'orderby' => 'date', 'order' => 'DESC', 'category' => array( $women_cat->slug ) ) );
+	}
+	if ( empty( $women_products ) ) {
+		$women_products = $sale_items;
+	}
+
+	if ( $men_cat ) {
+		$m_feat = wc_get_products( array( 'status' => 'publish', 'limit' => 8, 'featured' => true, 'category' => array( $men_cat->slug ) ) );
+		$men_products = ! empty( $m_feat )
+			? $m_feat
+			: wc_get_products( array( 'status' => 'publish', 'limit' => 8, 'orderby' => 'date', 'order' => 'DESC', 'category' => array( $men_cat->slug ) ) );
+	}
+	if ( empty( $men_products ) ) {
+		$men_products = $featured;
+	}
+}
+
 $popular_subcats = enhanced_is_woo() ? enhanced_get_popular_subcategories( 2 ) : array();
 
 /* Blog posts */
@@ -101,7 +145,8 @@ enhanced_get_template(
 		'hero_media_type', 'hero_image_url', 'hero_video_upload_url',
 		'hero_external_video_url', 'hero_external_embed', 'hero_external_is_video',
 		'reference_visual_url', 'categories', 'featured', 'sale_items',
-		'hero_product', 'arrivals', 'blog_posts', 'popular_subcats'
+		'hero_product', 'arrivals', 'blog_posts', 'popular_subcats',
+		'women_cat', 'men_cat', 'women_products', 'men_products'
 	)
 );
 

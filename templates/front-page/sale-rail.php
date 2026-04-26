@@ -27,7 +27,7 @@ $due_label = enhanced_get_option( 'sale_due_label', __( 'Due Aug 24', 'enhanced'
 			$img_id  = $product->get_image_id();
 			$img_url = $img_id ? wp_get_attachment_image_url( $img_id, 'enhanced-hero' ) : '';
 			$cats    = get_the_terms( $product->get_id(), 'product_cat' );
-			$cat     = ( $cats && ! is_wp_error( $cats ) ) ? $cats[0]->name : ( 0 === $i ? __( 'Main Collection', 'enhanced' ) : __( 'Woman Sale', 'enhanced' ) );
+			$cat     = ( $cats && ! is_wp_error( $cats ) ) ? $cats[0]->name : __( 'Sale Collection', 'enhanced' );
 		?>
 			<a class="lx-sale-promo fp-reveal fp-reveal--delay-<?php echo $i + 1; ?>"
 				href="<?php echo esc_url( get_permalink( $product->get_id() ) ); ?>"

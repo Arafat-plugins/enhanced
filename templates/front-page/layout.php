@@ -57,19 +57,21 @@ defined( 'ABSPATH' ) || exit;
 	<?php /* 5. Full-width sale banner */ ?>
 	<?php enhanced_get_template( 'front-page/sale-banner', compact( 'shop_url' ) ); ?>
 
-	<?php /* 6. New Sale For Women */ ?>
-	<?php if ( ! empty( $sale_items ) ) : ?>
+	<?php /* 6. Women's products — sale items if available, else latest from women's category */ ?>
+	<?php if ( ! empty( $women_products ) ) : ?>
 		<?php
 		enhanced_get_template(
 			'front-page/product-rail',
 			array(
 				'section_classes' => '',
-				'products'        => array_slice( $sale_items, 0, 8 ),
+				'products'        => array_slice( $women_products, 0, 8 ),
 				'shop_url'        => $shop_url,
 				'eyebrow'         => '',
-				'title'           => __( 'New Sale For Women', 'enhanced' ),
+				'title'           => $women_cat
+					? sprintf( __( 'New Sale For %s', 'enhanced' ), $women_cat->name )
+					: __( 'New Sale', 'enhanced' ),
 				'link_label'      => __( 'View All', 'enhanced' ),
-				'link_url'        => add_query_arg( 'orderby', 'price', $shop_url ),
+				'link_url'        => $women_cat ? get_term_link( $women_cat ) : add_query_arg( 'orderby', 'price', $shop_url ),
 				'prev_label'      => __( 'Previous', 'enhanced' ),
 				'next_label'      => __( 'Next', 'enhanced' ),
 			)
@@ -77,19 +79,21 @@ defined( 'ABSPATH' ) || exit;
 		?>
 	<?php endif; ?>
 
-	<?php /* 7. New Sale For Men */ ?>
-	<?php if ( ! empty( $featured ) ) : ?>
+	<?php /* 7. Men's products — featured if available, else latest from men's category */ ?>
+	<?php if ( ! empty( $men_products ) ) : ?>
 		<?php
 		enhanced_get_template(
 			'front-page/product-rail',
 			array(
 				'section_classes' => 'lx-product-rail--alt',
-				'products'        => array_slice( $featured, 0, 8 ),
+				'products'        => array_slice( $men_products, 0, 8 ),
 				'shop_url'        => $shop_url,
 				'eyebrow'         => '',
-				'title'           => __( 'New Sale For Men', 'enhanced' ),
+				'title'           => $men_cat
+					? sprintf( __( 'New For %s', 'enhanced' ), $men_cat->name )
+					: __( 'Featured Products', 'enhanced' ),
 				'link_label'      => __( 'View All', 'enhanced' ),
-				'link_url'        => $shop_url,
+				'link_url'        => $men_cat ? get_term_link( $men_cat ) : $shop_url,
 				'prev_label'      => __( 'Previous', 'enhanced' ),
 				'next_label'      => __( 'Next', 'enhanced' ),
 			)
