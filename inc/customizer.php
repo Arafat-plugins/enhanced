@@ -570,9 +570,21 @@ function enhanced_customizer( $wp_customize ) {
  * Output customizer CSS inline.
  */
 function enhanced_customizer_css() {
-	$accent  = get_theme_mod( 'enhanced_accent_color', '#cc2222' );
-	$util_bg = get_theme_mod( 'enhanced_utility_bg', '#111111' );
-	$foot_bg = get_theme_mod( 'enhanced_footer_bg', '#1a1a1a' );
+	$accent  = sanitize_hex_color( get_theme_mod( 'enhanced_accent_color', '#cc2222' ) );
+	$util_bg = sanitize_hex_color( get_theme_mod( 'enhanced_utility_bg', '#111111' ) );
+	$foot_bg = sanitize_hex_color( get_theme_mod( 'enhanced_footer_bg', '#1a1a1a' ) );
+
+	if ( ! $accent ) {
+		$accent = '#cc2222';
+	}
+
+	if ( ! $util_bg ) {
+		$util_bg = '#111111';
+	}
+
+	if ( ! $foot_bg ) {
+		$foot_bg = '#1a1a1a';
+	}
 	?>
 	<style id="enhanced-custom-css">
 		:root {

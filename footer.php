@@ -7,7 +7,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$footer_name = enhanced_get_option( 'footer_logo_text', get_bloginfo( 'name' ) );
+$footer_name = trim( (string) enhanced_get_option( 'footer_logo_text', '' ) );
+
+if ( '' === $footer_name ) {
+	$footer_name = get_bloginfo( 'name' );
+}
 ?>
 
 <footer class="site-footer">

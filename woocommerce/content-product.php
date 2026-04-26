@@ -14,12 +14,10 @@ if ( ! $product || ! $product->is_visible() ) {
 }
 
 $product_id          = $product->get_id();
+$product_name        = $product->get_name();
 $permalink           = get_permalink( $product_id );
-$image_id            = $product->get_image_id();
-$image_url           = $image_id ? wp_get_attachment_image_url( $image_id, 'enhanced-card' ) : wc_placeholder_img_src( 'enhanced-card' );
-$secondary_image_url = enhanced_get_product_secondary_image_url( $product );
-$has_secondary_image = ! empty( $secondary_image_url );
-$image_alt           = $image_id ? get_post_meta( $image_id, '_wp_attachment_image_alt', true ) : '';
+$card_media          = enhanced_get_product_card_media( $product );
+$has_secondary_image = ! empty( $card_media['secondary_url'] );
 $primary_category    = enhanced_get_product_primary_category_name( $product_id );
 $on_sale             = $product->is_on_sale();
 $date_created        = $product->get_date_created();
@@ -28,40 +26,23 @@ $avg_rating          = (float) $product->get_average_rating();
 $rating_cnt          = (int) $product->get_rating_count();
 $price_html          = $product->get_price_html();
 $stock_badge         = enhanced_get_product_stock_badge( $product );
-$sale_badge          = '';
-
-if ( $on_sale && $product->get_regular_price() && $product->get_sale_price() ) {
-	$regular = (float) $product->get_regular_price();
-	$sale    = (float) $product->get_sale_price();
-
-	if ( $regular > 0 && $sale > 0 && $sale < $regular ) {
-		$percentage = (int) round( ( ( $regular - $sale ) / $regular ) * 100 );
-
-		if ( $percentage > 0 ) {
-			$sale_badge = sprintf(
-				/* translators: %d percentage off */
-				__( '-%d%%', 'enhanced' ),
-				$percentage
-			);
-		}
-	}
-}
+$sale_badge          = enhanced_get_product_sale_badge( $product );
 ?>
 
 <div class="product-card<?php echo $has_secondary_image ? ' product-card--has-secondary' : ''; ?>">
 	<div class="product-card__media">
 		<img
 			class="product-card__image product-card__image--primary"
-			src="<?php echo esc_url( $image_url ); ?>"
-			alt="<?php echo esc_attr( $image_alt ?: $product->get_name() ); ?>"
+			src="<?php echo esc_url( $card_media['primary_url'] ); ?>"
+			alt="<?php echo esc_attr( $card_media['alt'] ); ?>"
 			loading="lazy"
 		>
 
 		<?php if ( $has_secondary_image ) : ?>
 			<img
 				class="product-card__image product-card__image--secondary"
-				src="<?php echo esc_url( $secondary_image_url ); ?>"
-				alt="<?php echo esc_attr( $image_alt ?: $product->get_name() ); ?>"
+				src="<?php echo esc_url( $card_media['secondary_url'] ); ?>"
+				alt="<?php echo esc_attr( $card_media['alt'] ); ?>"
 				loading="lazy"
 			>
 		<?php endif; ?>
@@ -89,7 +70,7 @@ if ( $on_sale && $product->get_regular_price() && $product->get_sale_price() ) {
 		<?php endif; ?>
 
 		<h3 class="product-card__name">
-			<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $product->get_name() ); ?></a>
+			<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $product_name ); ?></a>
 		</h3>
 
 		<?php if ( $avg_rating > 0 ) : ?>
