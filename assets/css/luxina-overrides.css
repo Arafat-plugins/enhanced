@@ -1415,3 +1415,89 @@
 @keyframes rp-rotate-in   { from { opacity: 0; transform: scale(1.08) rotate(3deg); } to { opacity: 1; transform: none; } }
 @keyframes rp-rotate-out  { from { opacity: 1; transform: none; }                     to { opacity: 0; transform: scale(.94) rotate(-2deg); } }
 
+/* ============================================================
+ * CATEGORY TILES — desktop pagination + mobile carousel
+ * ============================================================ */
+
+/* Hidden tile (pagination) */
+.lx-cat-tile.is-cat-hidden {
+  display: none !important;
+}
+
+/* Enter animation when page changes */
+.lx-cat-tile.is-cat-entering {
+  animation: cat-tile-in .32s ease both;
+}
+
+@keyframes cat-tile-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Pagination dots row */
+.lx-cat-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.lx-cat-pag-dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 4px;
+  background: rgba(17, 17, 17, .18);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background .22s, width .22s;
+  flex-shrink: 0;
+}
+
+.lx-cat-pag-dot.is-active {
+  background: var(--lx-black);
+  width: 24px;
+}
+
+/* ── Mobile carousel ──────────────────────────────────────── */
+@media (max-width: 860px) {
+  .lx-cat-tiles[data-lx-cat-paginate] {
+    display: flex !important;
+    grid-template-columns: unset !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 10px;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .lx-cat-tiles[data-lx-cat-paginate]::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* All tiles visible on mobile — pagination is desktop-only */
+  .lx-cat-tiles[data-lx-cat-paginate] .lx-cat-tile {
+    display: block !important;
+    flex: 0 0 44vw;
+    max-width: 180px;
+    scroll-snap-align: start;
+  }
+
+  .lx-cat-tile.is-cat-entering {
+    animation: none;
+  }
+
+  .lx-cat-pagination {
+    margin-top: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lx-cat-tiles[data-lx-cat-paginate] .lx-cat-tile {
+    flex: 0 0 48vw;
+    max-width: 200px;
+  }
+}
+

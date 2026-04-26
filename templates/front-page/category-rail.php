@@ -22,7 +22,7 @@ $browse_img_url = enhanced_get_image_option_url( 'browse_model_image', 'enhanced
 		</div>
 
 		<!-- Category tiles -->
-		<div class="lx-cat-tiles" data-lx-cat-track>
+		<div class="lx-cat-tiles" data-lx-cat-track data-lx-cat-paginate="5">
 			<?php foreach ( $categories as $i => $term ) :
 				$thumb_id  = get_term_meta( $term->term_id, 'thumbnail_id', true );
 				$thumb_url = $thumb_id ? wp_get_attachment_image_url( (int) $thumb_id, 'enhanced-card' ) : '';
@@ -47,6 +47,8 @@ $browse_img_url = enhanced_get_image_option_url( 'browse_model_image', 'enhanced
 				</a>
 			<?php endforeach; ?>
 		</div>
+
+		<div class="lx-cat-pagination" aria-label="<?php esc_attr_e( 'Category pages', 'enhanced' ); ?>"></div>
 
 	</div><!-- .container -->
 

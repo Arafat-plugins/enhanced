@@ -185,6 +185,78 @@
     });
   }
 
+  /* ── Category tiles pagination + mobile carousel dots ──── */
+  function initCatPaginate() {
+    var wrap = document.querySelector('[data-lx-cat-paginate]');
+    if (!wrap) return;
+
+    var perPage   = parseInt(wrap.getAttribute('data-lx-cat-paginate'), 10) || 5;
+    var tiles     = Array.from(wrap.querySelectorAll('.lx-cat-tile'));
+    var total     = tiles.length;
+    var nav       = document.querySelector('.lx-cat-pagination');
+    if (!nav || total <= perPage) return;
+
+    var pageCount = Math.ceil(total / perPage);
+    var current   = 0;
+    var dots      = [];
+
+    for (var p = 0; p < pageCount; p++) {
+      var btn = document.createElement('button');
+      btn.className = 'lx-cat-pag-dot';
+      btn.setAttribute('aria-label', 'Page ' + (p + 1));
+      btn.dataset.page = p;
+      nav.appendChild(btn);
+      dots.push(btn);
+    }
+
+    function isMobile() { return window.innerWidth <= 860; }
+
+    function setDot(page) {
+      dots.forEach(function (d, i) { d.classList.toggle('is-active', i === page); });
+    }
+
+    function showPage(page) {
+      current = page;
+      tiles.forEach(function (tile, i) {
+        var on = i >= page * perPage && i < (page + 1) * perPage;
+        tile.classList.toggle('is-cat-hidden', !on);
+        if (on) {
+          tile.classList.add('is-cat-entering');
+          tile.addEventListener('animationend', function () {
+            tile.classList.remove('is-cat-entering');
+          }, { once: true });
+        } else {
+          tile.classList.remove('is-cat-entering');
+        }
+      });
+      setDot(page);
+    }
+
+    dots.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var page = parseInt(btn.dataset.page, 10);
+        if (isMobile()) {
+          var maxScroll = wrap.scrollWidth - wrap.clientWidth;
+          var target = pageCount > 1 ? maxScroll * (page / (pageCount - 1)) : 0;
+          wrap.scrollTo({ left: target, behavior: 'smooth' });
+        } else {
+          showPage(page);
+        }
+      });
+    });
+
+    wrap.addEventListener('scroll', function () {
+      if (!isMobile()) return;
+      var maxScroll = wrap.scrollWidth - wrap.clientWidth;
+      if (maxScroll > 0) {
+        var page = Math.round((wrap.scrollLeft / maxScroll) * (pageCount - 1));
+        setDot(Math.max(0, Math.min(pageCount - 1, page)));
+      }
+    }, { passive: true });
+
+    showPage(0);
+  }
+
   /* ── Touch swipe on hero rail ────────────────────────────── */
   function initHeroTouch() {
     var rails = document.querySelectorAll('.lx-sale-rail, .lx-rail-track');
@@ -231,6 +303,7 @@
     initVideoBg();
     initHeroEmbedAutoplay();
     initRpSliders();
+    initCatPaginate();
     initHeroTouch();
     initNewsletter();
   });
