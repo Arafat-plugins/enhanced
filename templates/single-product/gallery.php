@@ -6,6 +6,19 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+
+$main_image_alt    = $main_image['alt'] ?: get_the_title();
+$main_image_width  = '';
+$main_image_height = '';
+
+if ( ! empty( $main_image['id'] ) ) {
+	$main_image_meta = wp_get_attachment_image_src( (int) $main_image['id'], 'woocommerce_single' );
+
+	if ( is_array( $main_image_meta ) ) {
+		$main_image_width  = isset( $main_image_meta[1] ) ? (int) $main_image_meta[1] : '';
+		$main_image_height = isset( $main_image_meta[2] ) ? (int) $main_image_meta[2] : '';
+	}
+}
 ?>
 
 <div class="product-gallery product-gallery--minimal">
@@ -16,8 +29,17 @@ defined( 'ABSPATH' ) || exit;
 
 		<img
 			src="<?php echo esc_url( $main_image['large'] ); ?>"
-			alt="<?php echo esc_attr( $main_image['alt'] ?: get_the_title() ); ?>"
+			alt="<?php echo esc_attr( $main_image_alt ); ?>"
 			data-gallery-main
+			loading="eager"
+			fetchpriority="high"
+			decoding="async"
+			<?php if ( $main_image_width ) : ?>
+				width="<?php echo esc_attr( $main_image_width ); ?>"
+			<?php endif; ?>
+			<?php if ( $main_image_height ) : ?>
+				height="<?php echo esc_attr( $main_image_height ); ?>"
+			<?php endif; ?>
 		>
 	</div>
 
@@ -32,7 +54,12 @@ defined( 'ABSPATH' ) || exit;
 					data-alt="<?php echo esc_attr( $image['alt'] ?: get_the_title() ); ?>"
 					aria-pressed="<?php echo 0 === $index ? 'true' : 'false'; ?>"
 				>
-					<img src="<?php echo esc_url( $image['thumb'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ?: get_the_title() ); ?>" loading="lazy">
+					<img
+						src="<?php echo esc_url( $image['thumb'] ); ?>"
+						alt="<?php echo esc_attr( $image['alt'] ?: get_the_title() ); ?>"
+						loading="lazy"
+						decoding="async"
+					>
 				</button>
 			<?php endforeach; ?>
 		</div>

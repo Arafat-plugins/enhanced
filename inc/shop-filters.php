@@ -8,6 +8,23 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Transient query args used only by the AJAX refresh layer.
+ */
+function enhanced_get_shop_transient_query_args() {
+	return array( 'enhanced_shop_ajax' );
+}
+
+/**
+ * Query args that should be cleared when resetting shop filters.
+ */
+function enhanced_get_shop_clear_query_args() {
+	return array_merge(
+		array( 's', 'filter_cat', 'filter_color', 'filter_size', 'min_price', 'max_price', 'paged' ),
+		enhanced_get_shop_transient_query_args()
+	);
+}
+
+/**
  * Get product categories with counts.
  */
 function enhanced_get_product_categories() {
@@ -240,7 +257,7 @@ function enhanced_filter_toggle_url( $key, $value ) {
 	} else {
 		$current[] = $value;
 	}
-	$base = remove_query_arg( array( $param, 'paged' ) );
+	$base = remove_query_arg( array_merge( array( $param, 'paged' ), enhanced_get_shop_transient_query_args() ) );
 	if ( empty( $current ) ) {
 		return $base;
 	}
@@ -261,17 +278,17 @@ function enhanced_filter_remove_url( $key, $value = null ) {
 	$target = $key_map[ $key ] ?? $key;
 
 	if ( is_array( $target ) ) {
-		return remove_query_arg( array_merge( $target, array( 'paged' ) ) );
+		return remove_query_arg( array_merge( $target, array( 'paged' ), enhanced_get_shop_transient_query_args() ) );
 	}
 
 	if ( $value === null || $key === 'search' || $key === 'price' ) {
-		return remove_query_arg( array( $target, 'paged' ) );
+		return remove_query_arg( array_merge( array( $target, 'paged' ), enhanced_get_shop_transient_query_args() ) );
 	}
 
 	$active = enhanced_get_active_filters();
 	$current = (array) ( $active[ $key ] ?? array() );
 	$current = array_values( array_diff( $current, array( $value ) ) );
-	$base = remove_query_arg( array( $target, 'paged' ) );
+	$base = remove_query_arg( array_merge( array( $target, 'paged' ), enhanced_get_shop_transient_query_args() ) );
 	if ( empty( $current ) ) return $base;
 	return add_query_arg( array( $target => $current ), $base );
 }
@@ -294,3 +311,72 @@ function enhanced_term_product_count( $taxonomy, $term_slug ) {
 	) );
 	return (int) $q->found_posts;
 }
+
+/**
+ * Remove transient AJAX-only query args from URLs rendered inside the shop UI.
+ */
+function enhanced_strip_shop_transient_args_from_url( $url ) {
+	if ( ! is_string( $url ) || '' === $url ) {
+		return $url;
+	}
+
+	return remove_query_arg( enhanced_get_shop_transient_query_args(), $url );
+}
+add_filter( 'woocommerce_product_add_to_cart_url', 'enhanced_strip_shop_transient_args_from_url' );
+
+/**
+ * Render the top-right count shown in the archive banner.
+ */
+function enhanced_get_shop_page_count_html( $product_total = null ) {
+	if ( null === $product_total ) {
+		$product_total = isset( $GLOBALS['wp_query']->found_posts ) ? (int) $GLOBALS['wp_query']->found_posts : 0;
+	}
+
+	if ( ! $product_total ) {
+		return '';
+	}
+
+	ob_start();
+	?>
+	<p class="page-banner__count">
+		<?php
+		printf(
+			/* translators: %d product count */
+			esc_html( _n( '%d product', '%d products', $product_total, 'enhanced' ) ),
+			$product_total
+		);
+		?>
+	</p>
+	<?php
+
+	return ob_get_clean();
+}
+
+/**
+ * Reuse the current shop template markup for the AJAX filter response.
+ */
+function enhanced_get_shop_shell_html() {
+	ob_start();
+	get_template_part( 'template-parts/shop-shell' );
+
+	return ob_get_clean();
+}
+
+/**
+ * JSON responder used by the enhanced shop AJAX layer.
+ */
+function enhanced_maybe_send_shop_ajax_response() {
+	if ( is_admin() || ! enhanced_is_shop_context() || empty( $_GET['enhanced_shop_ajax'] ) ) {
+		return;
+	}
+
+	unset( $_GET['enhanced_shop_ajax'], $_REQUEST['enhanced_shop_ajax'] );
+
+	wp_send_json_success(
+		array(
+			'shopShell'     => enhanced_get_shop_shell_html(),
+			'pageCountHtml' => enhanced_get_shop_page_count_html(),
+		)
+	);
+}
+add_action( 'template_redirect', 'enhanced_maybe_send_shop_ajax_response' );

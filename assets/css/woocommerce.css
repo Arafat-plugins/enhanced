@@ -131,6 +131,16 @@
 	grid-template-columns: 1fr;
 }
 
+.shop-shell[aria-busy="true"] {
+	pointer-events: none;
+}
+
+.shop-shell[aria-busy="true"] .shop-content,
+.shop-shell[aria-busy="true"] .en-filters {
+	opacity: 0.55;
+	transition: opacity var(--en-dur);
+}
+
 /* ── Sidebar ─────────────────────────────────────────────────── */
 .shop-sidebar {
 	position: sticky;

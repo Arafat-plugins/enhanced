@@ -13,12 +13,17 @@ $categories  = enhanced_get_product_categories();
 $colors      = enhanced_get_color_options();
 $sizes       = enhanced_get_size_options();
 list( $price_min, $price_max ) = enhanced_get_price_range();
+$category_open = ! empty( $active['category'] );
 
 $cur_min = $active['min'] !== null ? max( $price_min, (int) $active['min'] ) : $price_min;
 $cur_max = $active['max'] !== null ? min( $price_max, (int) $active['max'] ) : $price_max;
 
 $shop_url = enhanced_is_woo() ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/shop/' );
-$clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter_size', 'min_price', 'max_price', 'paged' ) );
+$clear_url = remove_query_arg(
+	function_exists( 'enhanced_get_shop_clear_query_args' )
+		? enhanced_get_shop_clear_query_args()
+		: array( 's', 'filter_cat', 'filter_color', 'filter_size', 'min_price', 'max_price', 'paged', 'enhanced_shop_ajax' )
+);
 ?>
 
 <aside id="shop-sidebar" class="en-filters" aria-label="<?php esc_attr_e( 'Product filters', 'enhanced' ); ?>" data-filter-root>
@@ -62,6 +67,9 @@ $clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter
 				<input type="hidden" name="<?php echo esc_attr( $carry ); ?>[]" value="<?php echo esc_attr( wp_unslash( $v ) ); ?>">
 			<?php endforeach;
 		endforeach; ?>
+		<?php if ( ! empty( $_GET['orderby'] ) ) : ?>
+			<input type="hidden" name="orderby" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['orderby'] ) ) ); ?>">
+		<?php endif; ?>
 		<?php if ( $active['min'] !== null ) : ?>
 			<input type="hidden" name="min_price" value="<?php echo esc_attr( $active['min'] ); ?>">
 		<?php endif; ?>
@@ -129,8 +137,8 @@ $clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter
 
 		<!-- Category -->
 		<?php if ( ! empty( $categories ) ) : ?>
-		<section class="en-group" data-open="true">
-			<button type="button" class="en-group__head" aria-expanded="true">
+		<section class="en-group" data-open="<?php echo $category_open ? 'true' : 'false'; ?>">
+			<button type="button" class="en-group__head" aria-expanded="<?php echo $category_open ? 'true' : 'false'; ?>">
 				<span class="en-group__label"><?php esc_html_e( 'Category', 'enhanced' ); ?></span>
 				<span class="en-group__count"><?php echo count( $categories ); ?></span>
 				<svg class="en-group__chev" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -234,6 +242,9 @@ $clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter
 							<input type="hidden" name="<?php echo esc_attr( $carry ); ?>[]" value="<?php echo esc_attr( wp_unslash( $v ) ); ?>">
 						<?php endforeach;
 					endforeach; ?>
+					<?php if ( ! empty( $_GET['orderby'] ) ) : ?>
+						<input type="hidden" name="orderby" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['orderby'] ) ) ); ?>">
+					<?php endif; ?>
 
 					<button type="submit" class="en-price__apply"><?php esc_html_e( 'Apply', 'enhanced' ); ?></button>
 				</form>

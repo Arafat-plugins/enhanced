@@ -14,17 +14,24 @@ $show_video     = in_array( $hero_media_type, array( 'video', 'external-video' )
 
 // Resolve image fallback only when not in video mode.
 $uploaded_image       = $hero_image_url;
+$uploaded_image_id    = (int) enhanced_get_option( 'hero_image', 0 );
+$hero_product_image_id = 0;
 $latest_product_image = '';
-$left_panel_image    = '';
+$left_panel_image     = '';
+$left_panel_image_id  = 0;
 
 if ( enhanced_is_woo() && $hero_product instanceof WC_Product ) {
-	$latest_product_image = $hero_product->get_image_id()
-		? wp_get_attachment_image_url( $hero_product->get_image_id(), 'enhanced-hero' )
+	$hero_product_image_id = (int) $hero_product->get_image_id();
+	$latest_product_image = $hero_product_image_id
+		? wp_get_attachment_image_url( $hero_product_image_id, 'enhanced-hero' )
 		: wc_placeholder_img_src( 'enhanced-hero' );
 }
 
 if ( ! $show_video ) {
-	$left_panel_image = $uploaded_image ?: $latest_product_image;
+	$left_panel_image_id = $uploaded_image_id ?: $hero_product_image_id;
+	$left_panel_image    = $left_panel_image_id
+		? wp_get_attachment_image_url( $left_panel_image_id, 'enhanced-hero' )
+		: ( $uploaded_image ?: $latest_product_image );
 
 	if ( ! $left_panel_image ) {
 		$left_panel_image = $reference_visual_url;
@@ -99,10 +106,30 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 					<div class="lx-hero-left__fallback"></div>
 				<?php endif; ?>
 			<?php elseif ( $left_panel_image ) : ?>
-				<img class="lx-hero-left__model"
-					src="<?php echo esc_url( $left_panel_image ); ?>"
-					alt="<?php echo esc_attr( $hero_title ?: get_bloginfo( 'name' ) ); ?>"
-					loading="eager">
+				<?php if ( $left_panel_image_id ) : ?>
+					<?php
+					echo wp_get_attachment_image(
+						$left_panel_image_id,
+						'enhanced-hero',
+						false,
+						array(
+							'class'         => 'lx-hero-left__model',
+							'alt'           => $hero_title ?: get_bloginfo( 'name' ),
+							'loading'       => 'eager',
+							'fetchpriority' => 'high',
+							'decoding'      => 'async',
+							'sizes'         => '(min-width: 961px) 42vw, 100vw',
+						)
+					);
+					?>
+				<?php else : ?>
+					<img class="lx-hero-left__model"
+						src="<?php echo esc_url( $left_panel_image ); ?>"
+						alt="<?php echo esc_attr( $hero_title ?: get_bloginfo( 'name' ) ); ?>"
+						loading="eager"
+						fetchpriority="high"
+						decoding="async">
+				<?php endif; ?>
 			<?php else : ?>
 				<div class="lx-hero-left__fallback"></div>
 			<?php endif; ?>
@@ -124,7 +151,9 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 				<img class="lx-rp-slide__img"
 				     src="<?php echo esc_url( $rp_slide['img'] ); ?>"
 				     alt=""
-				     loading="<?php echo 0 === $rp_i ? 'eager' : 'lazy'; ?>">
+				     loading="<?php echo 0 === $rp_i ? 'eager' : 'lazy'; ?>"
+				     fetchpriority="<?php echo 0 === $rp_i ? 'low' : 'auto'; ?>"
+				     decoding="async">
 				<div class="lx-rp-slide__overlay"></div>
 				<?php if ( '' !== $rp_slide['title'] ) : ?>
 					<p class="lx-rp-slide__title"><?php echo esc_html( $rp_slide['title'] ); ?></p>
@@ -148,7 +177,9 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 				<img class="lx-rp-slide__img"
 				     src="<?php echo esc_url( $rp_slide['img'] ); ?>"
 				     alt=""
-				     loading="<?php echo 0 === $rp_i ? 'eager' : 'lazy'; ?>">
+				     loading="<?php echo 0 === $rp_i ? 'eager' : 'lazy'; ?>"
+				     fetchpriority="<?php echo 0 === $rp_i ? 'low' : 'auto'; ?>"
+				     decoding="async">
 				<div class="lx-rp-slide__overlay"></div>
 				<?php if ( '' !== $rp_slide['title'] ) : ?>
 					<p class="lx-rp-slide__title"><?php echo esc_html( $rp_slide['title'] ); ?></p>

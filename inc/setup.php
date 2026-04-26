@@ -36,9 +36,6 @@ function enhanced_setup() {
 			'min_rows'        => 1,
 		),
 	) );
-	add_theme_support( 'wc-product-gallery-zoom' );
-	add_theme_support( 'wc-product-gallery-lightbox' );
-	add_theme_support( 'wc-product-gallery-slider' );
 
 	register_nav_menus( array(
 		'primary' => __( 'Primary Menu', 'enhanced' ),
