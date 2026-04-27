@@ -69,11 +69,16 @@ function enhanced_admin_save() {
 		'hero_overlay_opacity' => 'absint',
 		'hero_eyebrow'         => 'sanitize_text_field',
 		'hero_discount'        => 'sanitize_text_field',
+		'hero_discount_suffix' => 'sanitize_text_field',
+		'hero_off_label'       => 'sanitize_text_field',
 		'hero_description'     => 'sanitize_textarea_field',
+		'hero_title_line1'     => 'sanitize_text_field',
+		'hero_title_line2'     => 'sanitize_text_field',
 		'hero_primary_label'   => 'sanitize_text_field',
 		'hero_primary_url'     => 'esc_url_raw',
 		'hero_secondary_label' => 'sanitize_text_field',
 		'hero_secondary_url'   => 'esc_url_raw',
+		'hero_accent_color'    => 'sanitize_hex_color',
 		'hero_media_type'      => 'sanitize_key',
 		'hero_image'           => 'absint',
 		'hero_video_upload'    => 'absint',
@@ -85,16 +90,6 @@ function enhanced_admin_save() {
 		'rp_br_title'    => 'sanitize_text_field',
 		'rp_tr_opacity'  => 'absint',
 		'rp_br_opacity'  => 'absint',
-		// Browse categories
-		'browse_model_image'      => 'absint',
-		'browse_panel_bg'         => 'absint',
-		'browse_overlay_opacity'  => 'floatval',
-		'browse_kicker'           => 'sanitize_text_field',
-		'browse_heading_line1'    => 'sanitize_text_field',
-		'browse_heading_line2'    => 'sanitize_text_field',
-		'browse_desc'             => 'sanitize_textarea_field',
-		'browse_btn_label'        => 'sanitize_text_field',
-		'browse_btn_url'          => 'esc_url_raw',
 		// Sale Is On
 		'sale_due_label' => 'sanitize_text_field',
 		// Sale banner
@@ -333,11 +328,16 @@ function enhanced_admin_render_page() {
 function enhanced_admin_tab_hero() {
 	en_heading( __( 'Hero – Left Panel', 'enhanced' ), __( 'The large panel on the left side of the homepage hero.', 'enhanced' ) );
 
-	en_field( 'hero_eyebrow',       __( 'Eyebrow / Badge text', 'enhanced' ),  'text',     'Limited Offers' );
-	en_field( 'hero_discount',      __( 'Discount number', 'enhanced' ),        'text',     '50', __( 'Number only, e.g. 50', 'enhanced' ) );
-	en_field( 'hero_description',   __( 'Description', 'enhanced' ),            'textarea', 'Discover quality fashion…' );
-	en_field( 'hero_primary_label', __( 'Button label', 'enhanced' ),           'text',     'Explore Product' );
-	en_field( 'hero_primary_url',   __( 'Button URL', 'enhanced' ),             'url' );
+	en_field( 'hero_eyebrow',         __( 'Offer label', 'enhanced' ),           'text',     'Limited Time Offer' );
+	en_field( 'hero_discount',        __( 'Discount number', 'enhanced' ),       'text',     '49', __( 'Number only, e.g. 49', 'enhanced' ) );
+	en_field( 'hero_discount_suffix', __( 'Discount suffix', 'enhanced' ),       'text',     '%' );
+	en_field( 'hero_off_label',       __( 'Discount label', 'enhanced' ),        'text',     'OFF' );
+	en_field( 'hero_description',     __( 'Intro text', 'enhanced' ),            'textarea', 'This is the first time' );
+	en_field( 'hero_title_line1',     __( 'Headline line 1', 'enhanced' ),       'text',     'Manage' );
+	en_field( 'hero_title_line2',     __( 'Headline line 2', 'enhanced' ),       'text',     'MBA Intern' );
+	en_field( 'hero_primary_label',   __( 'Button label', 'enhanced' ),          'text',     'Explore Product' );
+	en_field( 'hero_primary_url',     __( 'Button URL', 'enhanced' ),            'url' );
+	en_color( 'hero_accent_color', __( 'Hero accent colour', 'enhanced' ), '#2f6f38' );
 
 	echo '<hr class="en-divider">';
 	en_heading( __( 'Hero Media', 'enhanced' ) );
@@ -469,40 +469,6 @@ function enhanced_admin_tab_slides() {
 /* ── Tab: Shop & Banners ──────────────────────────────────── */
 
 function enhanced_admin_tab_shop() {
-	en_heading( __( 'Browse Categories', 'enhanced' ), __( 'Controls the editorial banner that appears below the category tiles.', 'enhanced' ) );
-
-	echo '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
-	en_field( 'browse_kicker',        __( 'Kicker (small top label)', 'enhanced' ),   'text', 'Our Collections' );
-	en_field( 'browse_heading_line1', __( 'Heading — line 1 (outline)', 'enhanced' ), 'text', 'Browse' );
-	en_field( 'browse_heading_line2', __( 'Heading — line 2 (solid)', 'enhanced' ),   'text', 'Categories' );
-	en_field( 'browse_btn_label',     __( 'Button label', 'enhanced' ),               'text', 'Explore All' );
-	echo '</div>';
-	en_field( 'browse_desc',    __( 'Description text', 'enhanced' ),  'textarea', 'Curated collections that match your unique taste and lifestyle.' );
-	en_field( 'browse_btn_url', __( 'Button URL', 'enhanced' ),        'url', '',  __( 'Leave empty to use the shop URL.', 'enhanced' ) );
-
-	echo '<hr style="border:none;border-top:1px solid #eee;margin:20px 0;">';
-
-	en_image( 'browse_model_image', __( 'Model image (right panel)', 'enhanced' ), __( 'Right-side image in the Browse Categories section.', 'enhanced' ) );
-	en_image( 'browse_panel_bg', __( 'Left panel background image', 'enhanced' ), __( 'Sits behind the dark overlay on the left text panel. Leave empty for solid black.', 'enhanced' ) );
-
-	$_bop = max( 0, min( 1, (float) _en_mod( 'browse_overlay_opacity', 0.78 ) ) );
-	?>
-	<div class="en-field">
-		<label for="enhanced_browse_overlay_opacity">
-			<?php esc_html_e( 'Left panel overlay opacity', 'enhanced' ); ?>
-			&nbsp;<output id="en_bop_val" style="font-weight:700;"><?php echo esc_html( number_format( $_bop, 2 ) ); ?></output>
-			<span style="color:#888;font-size:11px;font-weight:400;">&nbsp;(0 = image only &nbsp;·&nbsp; 1 = fully black)</span>
-		</label>
-		<input type="range" min="0" max="1" step="0.05"
-		       id="enhanced_browse_overlay_opacity"
-		       name="enhanced_browse_overlay_opacity"
-		       value="<?php echo esc_attr( $_bop ); ?>"
-		       style="width:100%;max-width:500px;accent-color:#c00;display:block;margin-top:4px;"
-		       oninput="document.getElementById('en_bop_val').textContent=parseFloat(this.value).toFixed(2)">
-	</div>
-	<?php
-
-	echo '<hr class="en-divider">';
 	en_heading( __( 'Sale Is On', 'enhanced' ) );
 	en_field( 'sale_due_label', __( 'Due-date badge', 'enhanced' ), 'text', 'Due Aug 24', __( 'Shown on promo cards.', 'enhanced' ) );
 

@@ -142,22 +142,46 @@ function enhanced_customizer( $wp_customize ) {
 		// Left panel
 		'hero_eyebrow' => array(
 			'label'             => __( 'Left · Eyebrow / Badge text', 'enhanced' ),
-			'default'           => __( 'Limited Offers', 'enhanced' ),
+			'default'           => __( 'Limited Time Offer', 'enhanced' ),
 			'type'              => 'text',
 			'sanitize_callback' => 'sanitize_text_field',
 		),
 		'hero_discount' => array(
 			'label'             => __( 'Left · Big discount number', 'enhanced' ),
-			'description'       => __( 'Just the number, e.g. 50', 'enhanced' ),
-			'default'           => '50',
+			'description'       => __( 'Just the number, e.g. 49', 'enhanced' ),
+			'default'           => '49',
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'hero_discount_suffix' => array(
+			'label'             => __( 'Left · Discount suffix', 'enhanced' ),
+			'default'           => '%',
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'hero_off_label' => array(
+			'label'             => __( 'Left · Discount label', 'enhanced' ),
+			'default'           => __( 'OFF', 'enhanced' ),
 			'type'              => 'text',
 			'sanitize_callback' => 'sanitize_text_field',
 		),
 		'hero_description' => array(
-			'label'             => __( 'Left · Description', 'enhanced' ),
-			'default'           => __( 'Discover quality fashion that reflects your style and makes everyday living more enjoyable.', 'enhanced' ),
+			'label'             => __( 'Left · Intro text', 'enhanced' ),
+			'default'           => __( 'This is the first time', 'enhanced' ),
 			'type'              => 'textarea',
 			'sanitize_callback' => 'sanitize_textarea_field',
+		),
+		'hero_title_line1' => array(
+			'label'             => __( 'Left · Headline line 1', 'enhanced' ),
+			'default'           => __( 'Manage', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
+		),
+		'hero_title_line2' => array(
+			'label'             => __( 'Left · Headline line 2', 'enhanced' ),
+			'default'           => __( 'MBA Intern', 'enhanced' ),
+			'type'              => 'text',
+			'sanitize_callback' => 'sanitize_text_field',
 		),
 		'hero_primary_label' => array(
 			'label'             => __( 'Left · Button label', 'enhanced' ),
@@ -328,17 +352,6 @@ function enhanced_customizer( $wp_customize ) {
 			) );
 		}
 	}
-
-	/* ──────────────────────────────────────────────────────────
-	 * 5) FRONT PAGE — BROWSE CATEGORIES SPLIT
-	 * ────────────────────────────────────────────────────────── */
-	$wp_customize->add_section( 'enhanced_browse', array(
-		'title'       => __( 'Front Page · Browse Categories', 'enhanced' ),
-		'panel'       => 'enhanced_panel',
-		'description' => __( 'The right-side model image shown below the category tiles.', 'enhanced' ),
-	) );
-
-	enhanced_customizer_add_image( $wp_customize, 'browse_model_image', 'enhanced_browse', __( 'Browse · Model image (right panel)', 'enhanced' ) );
 
 	/* ──────────────────────────────────────────────────────────
 	 * 5) FRONT PAGE — SALE IS ON

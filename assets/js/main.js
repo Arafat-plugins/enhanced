@@ -74,6 +74,7 @@
 		initSimpleOptionPickers();
 		initWishlistToggle();
 		initHomeRails();
+		initMarqueeRails();
 		initHeroSlider();
 		initArrivalShowcase();
 	});
@@ -96,7 +97,6 @@
 
 	function initShopFeatures() {
 		initShopSidebar();
-		initSidebarAccordions();
 		initFilterGroups();
 		initPriceSlider();
 		initFilterSearch();
@@ -295,32 +295,6 @@
 			if (window.innerWidth > 960) {
 				close();
 			}
-		});
-	}
-
-	function initSidebarAccordions() {
-		document.querySelectorAll(".shop-sidebar .widget").forEach(function (widget) {
-			if (widget.dataset.accordionReady === "true") return;
-
-			const title = widget.querySelector(".widget__title");
-			if (!title) return;
-
-			widget.dataset.accordionReady = "true";
-			widget.classList.remove("is-collapsed");
-			title.setAttribute("role", "button");
-			title.setAttribute("tabindex", "0");
-
-			const toggle = function () {
-				widget.classList.toggle("is-collapsed");
-			};
-
-			title.addEventListener("click", toggle);
-			title.addEventListener("keydown", function (event) {
-				if (event.key === "Enter" || event.key === " ") {
-					event.preventDefault();
-					toggle();
-				}
-			});
 		});
 	}
 
@@ -1292,6 +1266,23 @@
 			prepareAutoplayTrack();
 			updateButtons();
 			queueAutoplay();
+		});
+	}
+
+	function initMarqueeRails() {
+		document.querySelectorAll(".lx-rail-marquee").forEach(function (marquee) {
+			if (marquee.dataset.marqueeBound === "true") {
+				return;
+			}
+
+			marquee.dataset.marqueeBound = "true";
+			marquee.addEventListener("click", function (event) {
+				if (event.target.closest("a, button")) {
+					return;
+				}
+
+				marquee.classList.toggle("is-paused");
+			});
 		});
 	}
 

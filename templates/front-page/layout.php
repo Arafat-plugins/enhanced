@@ -29,12 +29,7 @@ defined( 'ABSPATH' ) || exit;
 		<?php enhanced_get_template( 'front-page/category-rail', compact( 'categories', 'shop_url' ) ); ?>
 	<?php endif; ?>
 
-	<?php /* 3. Sale Is On */ ?>
-	<?php if ( ! empty( $sale_items ) || ! empty( $featured ) ) : ?>
-		<?php enhanced_get_template( 'front-page/sale-rail', compact( 'sale_items', 'featured', 'shop_url' ) ); ?>
-	<?php endif; ?>
-
-	<?php /* 4. New Arrivals carousel */ ?>
+	<?php /* 3. New Arrivals carousel */ ?>
 	<?php if ( ! empty( $arrivals ) ) : ?>
 		<?php
 		enhanced_get_template(
@@ -54,6 +49,11 @@ defined( 'ABSPATH' ) || exit;
 		?>
 	<?php endif; ?>
 
+	<?php /* 4. Sale Is On */ ?>
+	<?php if ( ! empty( $sale_items ) || ! empty( $featured ) ) : ?>
+		<?php enhanced_get_template( 'front-page/sale-rail', compact( 'sale_items', 'featured', 'shop_url' ) ); ?>
+	<?php endif; ?>
+
 	<?php /* 5. Full-width sale banner */ ?>
 	<?php enhanced_get_template( 'front-page/sale-banner', compact( 'shop_url' ) ); ?>
 
@@ -65,6 +65,7 @@ defined( 'ABSPATH' ) || exit;
 			array(
 				'section_classes' => '',
 				'products'        => array_slice( $women_products, 0, 8 ),
+				'marquee_direction' => 'left',
 				'shop_url'        => $shop_url,
 				'eyebrow'         => '',
 				'title'           => $women_cat
@@ -87,6 +88,7 @@ defined( 'ABSPATH' ) || exit;
 			array(
 				'section_classes' => 'lx-product-rail--alt',
 				'products'        => array_slice( $men_products, 0, 8 ),
+				'marquee_direction' => 'right',
 				'shop_url'        => $shop_url,
 				'eyebrow'         => '',
 				'title'           => $men_cat

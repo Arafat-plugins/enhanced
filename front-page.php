@@ -10,9 +10,9 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 
 $shop_url                = enhanced_shop_url();
-$hero_eyebrow            = enhanced_get_option( 'hero_eyebrow', __( 'Limited Offers', 'enhanced' ) );
-$hero_title              = enhanced_get_option( 'hero_title', __( 'Elevated Ethnic Menswear', 'enhanced' ) );
-$hero_description        = enhanced_get_option( 'hero_description', __( 'Discover quality fashion that reflects your style and makes everyday living more enjoyable.', 'enhanced' ) );
+$hero_eyebrow            = enhanced_get_option( 'hero_eyebrow', __( 'Limited Time Offer', 'enhanced' ) );
+$hero_title              = enhanced_get_option( 'hero_title', __( 'Manage', 'enhanced' ) );
+$hero_description        = enhanced_get_option( 'hero_description', __( 'This is the first time', 'enhanced' ) );
 $hero_primary_label      = enhanced_get_option( 'hero_primary_label', __( 'Explore Product', 'enhanced' ) );
 $hero_primary_url        = enhanced_get_option( 'hero_primary_url', $shop_url );
 $hero_secondary_label    = enhanced_get_option( 'hero_secondary_label', __( 'Explore the Brand', 'enhanced' ) );
@@ -102,6 +102,9 @@ if ( enhanced_is_woo() ) {
 	if ( empty( $women_products ) ) {
 		$women_products = $sale_items;
 	}
+	if ( empty( $women_products ) ) {
+		$women_products = ! empty( $arrivals ) ? $arrivals : $featured;
+	}
 
 	if ( $men_cat ) {
 		$m_feat = wc_get_products( array( 'status' => 'publish', 'limit' => 8, 'featured' => true, 'category' => array( $men_cat->slug ) ) );
@@ -111,6 +114,9 @@ if ( enhanced_is_woo() ) {
 	}
 	if ( empty( $men_products ) ) {
 		$men_products = $featured;
+	}
+	if ( empty( $men_products ) ) {
+		$men_products = $arrivals;
 	}
 }
 

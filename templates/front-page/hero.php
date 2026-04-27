@@ -38,7 +38,12 @@ if ( ! $show_video ) {
 	}
 }
 
-$hero_discount         = enhanced_get_option( 'hero_discount', '50' );
+$hero_discount         = enhanced_get_option( 'hero_discount', '49' );
+$hero_discount_suffix  = enhanced_get_option( 'hero_discount_suffix', '%' );
+$hero_off_label        = enhanced_get_option( 'hero_off_label', __( 'OFF', 'enhanced' ) );
+$hero_title_line1      = enhanced_get_option( 'hero_title_line1', $hero_title ?: __( 'Manage', 'enhanced' ) );
+$hero_title_line2      = enhanced_get_option( 'hero_title_line2', __( 'MBA Intern', 'enhanced' ) );
+$hero_accent_color     = sanitize_hex_color( enhanced_get_option( 'hero_accent_color', '#2f6f38' ) ) ?: '#2f6f38';
 $hero_overlay_color   = enhanced_get_option( 'hero_overlay_color', '#000000' );
 $hero_overlay_opacity = min( 100, max( 0, (int) enhanced_get_option( 'hero_overlay_opacity', 0 ) ) );
 
@@ -50,33 +55,51 @@ $rp_tr_slides = enhanced_build_rp_slides( 'tr' );
 $rp_br_slides = enhanced_build_rp_slides( 'br' );
 ?>
 
-<div class="lx-hero-grid">
+<div class="lx-hero-grid" style="--lx-hero-accent: <?php echo esc_attr( $hero_accent_color ); ?>;">
 	<div class="lx-hero-left">
 		<div class="lx-hero-left__content">
 			<?php if ( $hero_eyebrow ) : ?>
-				<span class="lx-hero-barcode" aria-hidden="true">
-					<svg class="lx-hero-barcode__svg" viewBox="0 0 80 28" fill="currentColor" aria-hidden="true">
-						<rect x="0" y="0" width="3" height="28"/><rect x="5" y="0" width="1" height="28"/>
-						<rect x="8" y="0" width="2" height="28"/><rect x="12" y="0" width="4" height="28"/>
-						<rect x="18" y="0" width="1" height="28"/><rect x="21" y="0" width="3" height="28"/>
-						<rect x="26" y="0" width="2" height="28"/><rect x="30" y="0" width="1" height="28"/>
-						<rect x="33" y="0" width="4" height="28"/><rect x="39" y="0" width="1" height="28"/>
-						<rect x="42" y="0" width="2" height="28"/><rect x="46" y="0" width="3" height="28"/>
-						<rect x="51" y="0" width="1" height="28"/><rect x="54" y="0" width="2" height="28"/>
-						<rect x="58" y="0" width="4" height="28"/><rect x="64" y="0" width="1" height="28"/>
-						<rect x="67" y="0" width="3" height="28"/><rect x="72" y="0" width="2" height="28"/>
-						<rect x="76" y="0" width="4" height="28"/>
+				<span class="lx-hero-offer">
+					<svg class="lx-hero-offer__icon" viewBox="0 0 28 28" fill="currentColor" aria-hidden="true">
+						<circle cx="7" cy="11" r="3.4"/>
+						<circle cx="13" cy="7" r="3.5"/>
+						<circle cx="19" cy="10.5" r="3.2"/>
+						<circle cx="22" cy="16.5" r="2.8"/>
+						<path d="M5.7 20.1c.9-4.2 4.2-7.1 8.1-7.1 4.1 0 7.5 3.2 8.3 7.5.4 2.2-1 3.9-3.1 3.9-1.3 0-2.5-.7-5.2-.7-2.6 0-3.8.7-5.1.7-2.1 0-3.5-1.8-3-4.3Z"/>
 					</svg>
-					<span class="lx-hero-barcode__label"><?php echo esc_html( $hero_eyebrow ); ?></span>
+					<span class="lx-hero-offer__rule" aria-hidden="true"></span>
+					<span class="lx-hero-offer__label"><?php echo esc_html( $hero_eyebrow ); ?></span>
 				</span>
 			<?php endif; ?>
 
 			<div class="lx-hero-discount">
-				<?php echo esc_html( $hero_discount ); ?><sup>%<br><?php esc_html_e( 'OFF', 'enhanced' ); ?></sup>
+				<span class="lx-hero-discount__number"><?php echo esc_html( $hero_discount ); ?></span>
+				<?php if ( $hero_discount_suffix ) : ?>
+					<sup class="lx-hero-discount__suffix"><?php echo esc_html( $hero_discount_suffix ); ?></sup>
+				<?php endif; ?>
 			</div>
+
+			<?php if ( $hero_off_label ) : ?>
+				<div class="lx-hero-offline">
+					<span aria-hidden="true"></span>
+					<strong><?php echo esc_html( $hero_off_label ); ?></strong>
+					<span aria-hidden="true"></span>
+				</div>
+			<?php endif; ?>
 
 			<?php if ( $hero_description ) : ?>
 				<p class="lx-hero-desc"><?php echo esc_html( $hero_description ); ?></p>
+			<?php endif; ?>
+
+			<?php if ( $hero_title_line1 || $hero_title_line2 ) : ?>
+				<h1 class="lx-hero-title">
+					<?php if ( $hero_title_line1 ) : ?>
+						<span><?php echo esc_html( $hero_title_line1 ); ?></span>
+					<?php endif; ?>
+					<?php if ( $hero_title_line2 ) : ?>
+						<span class="lx-hero-title__accent"><?php echo esc_html( $hero_title_line2 ); ?></span>
+					<?php endif; ?>
+				</h1>
 			<?php endif; ?>
 
 			<?php if ( $hero_primary_label ) : ?>

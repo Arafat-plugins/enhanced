@@ -1,22 +1,11 @@
 <?php
 /**
- * Category rail — Luxina: tiles row + browse split below.
+ * Category rail — Luxina category tiles.
  *
  * @package Enhanced
  */
 
 defined( 'ABSPATH' ) || exit;
-
-$browse_img_url    = enhanced_get_image_option_url( 'browse_model_image', 'enhanced-hero' );
-$browse_panel_bg   = enhanced_get_image_option_url( 'browse_panel_bg', 'enhanced-hero' );
-$browse_opacity    = max( 0, min( 1, (float) get_theme_mod( 'enhanced_browse_overlay_opacity', 0.78 ) ) );
-$browse_kicker     = enhanced_get_option( 'browse_kicker',        __( 'Our Collections', 'enhanced' ) );
-$browse_line1      = enhanced_get_option( 'browse_heading_line1', __( 'Browse', 'enhanced' ) );
-$browse_line2      = enhanced_get_option( 'browse_heading_line2', __( 'Categories', 'enhanced' ) );
-$browse_desc       = enhanced_get_option( 'browse_desc',          __( 'Curated collections that match your unique taste and lifestyle.', 'enhanced' ) );
-$browse_btn_label  = enhanced_get_option( 'browse_btn_label',     __( 'Explore All', 'enhanced' ) );
-$browse_btn_url    = enhanced_get_option( 'browse_btn_url',       '' );
-$browse_btn_url    = $browse_btn_url ? $browse_btn_url : $shop_url;
 ?>
 
 <section class="lx-browse-cats fp-reveal">
@@ -60,66 +49,5 @@ $browse_btn_url    = $browse_btn_url ? $browse_btn_url : $shop_url;
 		<div class="lx-cat-pagination" aria-label="<?php esc_attr_e( 'Category pages', 'enhanced' ); ?>"></div>
 
 	</div><!-- .container -->
-
-	<!-- Browse split: editorial dark panel + image -->
-	<?php $product_count = enhanced_is_woo() ? (int) wp_count_posts( 'product' )->publish : 0; ?>
-	<div class="lx-browse-split">
-
-		<div class="lx-browse-split__text<?php echo $browse_panel_bg ? ' has-panel-bg' : ''; ?>"
-			<?php if ( $browse_panel_bg ) : ?>
-				style="background-image: url('<?php echo esc_url( $browse_panel_bg ); ?>');"
-			<?php endif; ?>>
-
-			<?php if ( $browse_panel_bg ) : ?>
-			<div class="lx-browse-split__overlay" style="background: rgba(0,0,0,<?php echo esc_attr( $browse_opacity ); ?>);"></div>
-			<?php endif; ?>
-
-			<span class="lx-browse-split__kicker"><?php echo esc_html( $browse_kicker ); ?></span>
-
-			<h3 class="lx-browse-split__heading">
-				<span class="lx-browse-split__heading-outline"><?php echo esc_html( $browse_line1 ); ?></span>
-				<span><?php echo esc_html( $browse_line2 ); ?></span>
-			</h3>
-
-			<p class="lx-browse-split__desc">
-				<?php echo esc_html( $browse_desc ); ?>
-			</p>
-
-			<?php if ( ! empty( $categories ) ) : ?>
-			<div class="lx-browse-split__stats">
-				<div class="lx-browse-split__stat">
-					<span class="lx-browse-split__stat-num"><?php echo count( $categories ); ?>+</span>
-					<span class="lx-browse-split__stat-label"><?php esc_html_e( 'Categories', 'enhanced' ); ?></span>
-				</div>
-				<?php if ( $product_count > 0 ) : ?>
-				<div class="lx-browse-split__divider"></div>
-				<div class="lx-browse-split__stat">
-					<span class="lx-browse-split__stat-num"><?php echo esc_html( $product_count ); ?>+</span>
-					<span class="lx-browse-split__stat-label"><?php esc_html_e( 'Products', 'enhanced' ); ?></span>
-				</div>
-				<?php endif; ?>
-			</div>
-			<?php endif; ?>
-
-			<a class="lx-browse-split__cta" href="<?php echo esc_url( $browse_btn_url ); ?>">
-				<?php echo esc_html( $browse_btn_label ); ?>
-				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-					<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-				</svg>
-			</a>
-		</div>
-
-		<div class="lx-browse-split__image">
-			<?php if ( $browse_img_url ) : ?>
-				<img src="<?php echo esc_url( $browse_img_url ); ?>" alt="" loading="lazy">
-			<?php else : ?>
-				<div class="lx-browse-split__fallback"></div>
-			<?php endif; ?>
-			<div class="lx-browse-split__image-badge">
-				<span><?php esc_html_e( 'New Season', 'enhanced' ); ?></span>
-			</div>
-		</div>
-
-	</div>
 
 </section>
