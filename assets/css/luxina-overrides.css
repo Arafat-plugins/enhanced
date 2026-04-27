@@ -791,6 +791,11 @@
 
   .lx-hero-tr,
   .lx-hero-br { min-height: 220px; }
+
+  /* Hide right-panel slots on mobile when no slides are configured */
+  .lx-rp-slider--empty {
+    display: none !important;
+  }
 }
 
 /* ============================================================

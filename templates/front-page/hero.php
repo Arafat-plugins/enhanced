@@ -142,7 +142,7 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 	</div>
 
 	<?php /* Top-right slider */ ?>
-	<div class="lx-hero-tr lx-rp-slider" data-lx-rp-slider
+	<div class="lx-hero-tr lx-rp-slider<?php echo empty( $rp_tr_slides ) ? ' lx-rp-slider--empty' : ''; ?>" data-lx-rp-slider
 	     data-interval="<?php echo esc_attr( $rp_tr_interval ); ?>">
 		<?php if ( ! empty( $rp_tr_slides ) ) : ?>
 			<?php foreach ( $rp_tr_slides as $rp_i => $rp_slide ) : ?>
@@ -168,7 +168,7 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 	</div>
 
 	<?php /* Bottom-right slider */ ?>
-	<div class="lx-hero-br lx-rp-slider" data-lx-rp-slider
+	<div class="lx-hero-br lx-rp-slider<?php echo empty( $rp_br_slides ) ? ' lx-rp-slider--empty' : ''; ?>" data-lx-rp-slider
 	     data-interval="<?php echo esc_attr( $rp_br_interval ); ?>">
 		<?php if ( ! empty( $rp_br_slides ) ) : ?>
 			<?php foreach ( $rp_br_slides as $rp_i => $rp_slide ) : ?>
