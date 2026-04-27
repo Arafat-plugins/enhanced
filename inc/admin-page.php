@@ -86,7 +86,9 @@ function enhanced_admin_save() {
 		'rp_tr_opacity'  => 'absint',
 		'rp_br_opacity'  => 'absint',
 		// Browse categories
-		'browse_model_image' => 'absint',
+		'browse_model_image'      => 'absint',
+		'browse_panel_bg'         => 'absint',
+		'browse_overlay_opacity'  => 'floatval',
 		// Sale Is On
 		'sale_due_label' => 'sanitize_text_field',
 		// Sale banner
@@ -462,7 +464,25 @@ function enhanced_admin_tab_slides() {
 
 function enhanced_admin_tab_shop() {
 	en_heading( __( 'Browse Categories', 'enhanced' ) );
-	en_image( 'browse_model_image', __( 'Model image', 'enhanced' ), __( 'Right-side image in the Browse Categories section.', 'enhanced' ) );
+	en_image( 'browse_model_image', __( 'Model image (right panel)', 'enhanced' ), __( 'Right-side image in the Browse Categories section.', 'enhanced' ) );
+	en_image( 'browse_panel_bg', __( 'Left panel background image', 'enhanced' ), __( 'Sits behind the dark overlay on the left text panel. Leave empty for solid black.', 'enhanced' ) );
+
+	$_bop = max( 0, min( 1, (float) _en_mod( 'browse_overlay_opacity', 0.78 ) ) );
+	?>
+	<div class="en-field">
+		<label for="enhanced_browse_overlay_opacity">
+			<?php esc_html_e( 'Left panel overlay opacity', 'enhanced' ); ?>
+			&nbsp;<output id="en_bop_val" style="font-weight:700;"><?php echo esc_html( number_format( $_bop, 2 ) ); ?></output>
+			<span style="color:#888;font-size:11px;font-weight:400;">&nbsp;(0 = image only &nbsp;·&nbsp; 1 = fully black)</span>
+		</label>
+		<input type="range" min="0" max="1" step="0.05"
+		       id="enhanced_browse_overlay_opacity"
+		       name="enhanced_browse_overlay_opacity"
+		       value="<?php echo esc_attr( $_bop ); ?>"
+		       style="width:100%;max-width:500px;accent-color:#c00;display:block;margin-top:4px;"
+		       oninput="document.getElementById('en_bop_val').textContent=parseFloat(this.value).toFixed(2)">
+	</div>
+	<?php
 
 	echo '<hr class="en-divider">';
 	en_heading( __( 'Sale Is On', 'enhanced' ) );
