@@ -138,68 +138,220 @@
 /* Category tiles: single row of 5 (no left CTA column) */
 .lx-cat-tiles { grid-template-columns: repeat(5, 1fr); }
 
-/* ── Browse split: text-left + image-right ──────────────────── */
+/* ── Browse split: editorial dark panel + image ──────────────── */
 .lx-browse-split {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.15fr;
+  min-height: 480px;
+  margin-top: 10px;
   gap: 3px;
-  background: var(--lx-line);
-  margin-top: 3px;
 }
+
 .lx-browse-split__text {
-  background: var(--lx-gray);
-  padding: 56px 60px;
+  background: #111;
+  padding: 60px 52px 60px 48px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 16px;
-  min-height: 380px;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
 }
-.lx-browse-split__text .lx-browse-cta__eyebrow {
-  font-size: 11px;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--lx-muted);
-  margin: 0;
-}
-.lx-browse-split__text .lx-browse-cta__title {
+
+/* Ghost decorative letterform behind content */
+.lx-browse-split__text::after {
+  content: '//';
+  position: absolute;
+  bottom: -30px;
+  right: -20px;
   font-family: var(--lx-serif);
-  font-size: clamp(30px, 3.5vw, 52px);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .04em;
+  font-size: 240px;
+  font-weight: 900;
+  color: rgba(255,255,255,.04);
   line-height: 1;
-  color: var(--lx-black);
-  margin: 0;
+  letter-spacing: -.04em;
+  pointer-events: none;
+  user-select: none;
 }
+
+.lx-browse-split__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--lx-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.38);
+  margin-bottom: 22px;
+}
+
+.lx-browse-split__kicker::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: rgba(255,255,255,.25);
+  flex-shrink: 0;
+}
+
+.lx-browse-split__heading {
+  font-family: var(--lx-serif);
+  font-size: clamp(48px, 5.8vw, 86px);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  line-height: .88;
+  margin: 0 0 22px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lx-browse-split__heading-outline {
+  -webkit-text-stroke: 1.5px rgba(255,255,255,.45);
+  color: transparent;
+}
+
+.lx-browse-split__heading span:last-child {
+  color: #fff;
+}
+
+.lx-browse-split__desc {
+  font-family: var(--lx-sans);
+  font-size: 13px;
+  line-height: 1.75;
+  color: rgba(255,255,255,.46);
+  max-width: 290px;
+  margin: 0 0 34px;
+}
+
+.lx-browse-split__stats {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 38px;
+}
+
+.lx-browse-split__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lx-browse-split__stat-num {
+  font-family: var(--lx-serif);
+  font-size: clamp(30px, 3.2vw, 46px);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -.01em;
+}
+
+.lx-browse-split__stat-label {
+  font-family: var(--lx-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.36);
+}
+
+.lx-browse-split__divider {
+  width: 1px;
+  height: 44px;
+  background: rgba(255,255,255,.12);
+  flex-shrink: 0;
+}
+
+.lx-browse-split__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  align-self: flex-start;
+  font-family: var(--lx-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #fff;
+  text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,.28);
+  padding: 15px 26px;
+  transition: background .22s, border-color .22s, gap .22s;
+}
+
+.lx-browse-split__cta:hover {
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.55);
+  gap: 18px;
+}
+
+/* Right: image panel */
 .lx-browse-split__image {
   position: relative;
   overflow: hidden;
-  min-height: 380px;
-  background: #e8e4de;
+  min-height: 480px;
+  background: #1c1c1c;
 }
+
 .lx-browse-split__image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top center;
+  object-position: center;
+  display: block;
+  transition: transform .9s cubic-bezier(.25, .46, .45, .94);
 }
+
+.lx-browse-split:hover .lx-browse-split__image img {
+  transform: scale(1.05);
+}
+
+/* Gradient overlay on image */
+.lx-browse-split__image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(0,0,0,.06) 0%,
+    rgba(0,0,0,.0)  35%,
+    rgba(0,0,0,.52) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.lx-browse-split__image-badge {
+  position: absolute;
+  bottom: 26px;
+  left: 26px;
+  z-index: 2;
+}
+
+.lx-browse-split__image-badge span {
+  display: inline-block;
+  font-family: var(--lx-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 7px 16px;
+}
+
 .lx-browse-split__fallback {
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg, #e8e4de, #d4d0c8);
+  background: linear-gradient(145deg, #2a2624, #1a1816);
   background-image: repeating-linear-gradient(
-    -45deg, transparent, transparent 28px,
-    rgba(0,0,0,.025) 28px, rgba(0,0,0,.025) 29px
+    -45deg, transparent, transparent 32px,
+    rgba(255,255,255,.02) 32px, rgba(255,255,255,.02) 33px
   );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: monospace;
-  font-size: 10px;
-  color: rgba(0,0,0,.2);
-  text-align: center;
-  padding: 16px;
 }
 
 /* ── Sale Is On: 2 large promo banners ───────────────────────── */
@@ -400,7 +552,9 @@
   .site-header__toggle { display: flex !important; }
   .site-header__nav-bar { display: none; }
   .lx-browse-split { grid-template-columns: 1fr; }
-  .lx-browse-split__image { min-height: 280px; }
+  .lx-browse-split__text { padding: 44px 28px; }
+  .lx-browse-split__text::after { font-size: 140px; }
+  .lx-browse-split__image { min-height: 320px; }
   .lx-sale-promos { grid-template-columns: 1fr; }
   .lx-sale-promo { min-height: 320px; }
   .fp2-newsletter__inner { grid-template-columns: 1fr; }

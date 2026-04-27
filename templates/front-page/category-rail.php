@@ -52,25 +52,57 @@ $browse_img_url = enhanced_get_image_option_url( 'browse_model_image', 'enhanced
 
 	</div><!-- .container -->
 
-	<!-- Browse split: text CTA (left) + model image (right) -->
+	<!-- Browse split: editorial dark panel + image -->
+	<?php $product_count = enhanced_is_woo() ? (int) wp_count_posts( 'product' )->publish : 0; ?>
 	<div class="lx-browse-split">
+
 		<div class="lx-browse-split__text">
-			<p class="lx-browse-cta__eyebrow"><?php esc_html_e( 'our categories match by your taste', 'enhanced' ); ?></p>
-			<h3 class="lx-browse-cta__title"><?php esc_html_e( 'Browse Categories', 'enhanced' ); ?></h3>
-			<a class="lx-btn lx-btn--black" href="<?php echo esc_url( $shop_url ); ?>">
-				<?php esc_html_e( 'Check It Out', 'enhanced' ); ?>
-				<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+			<span class="lx-browse-split__kicker"><?php esc_html_e( 'Our Collections', 'enhanced' ); ?></span>
+
+			<h3 class="lx-browse-split__heading">
+				<span class="lx-browse-split__heading-outline"><?php esc_html_e( 'Browse', 'enhanced' ); ?></span>
+				<span><?php esc_html_e( 'Categories', 'enhanced' ); ?></span>
+			</h3>
+
+			<p class="lx-browse-split__desc">
+				<?php esc_html_e( 'Curated collections that match your unique taste and lifestyle.', 'enhanced' ); ?>
+			</p>
+
+			<?php if ( ! empty( $categories ) ) : ?>
+			<div class="lx-browse-split__stats">
+				<div class="lx-browse-split__stat">
+					<span class="lx-browse-split__stat-num"><?php echo count( $categories ); ?>+</span>
+					<span class="lx-browse-split__stat-label"><?php esc_html_e( 'Categories', 'enhanced' ); ?></span>
+				</div>
+				<?php if ( $product_count > 0 ) : ?>
+				<div class="lx-browse-split__divider"></div>
+				<div class="lx-browse-split__stat">
+					<span class="lx-browse-split__stat-num"><?php echo esc_html( $product_count ); ?>+</span>
+					<span class="lx-browse-split__stat-label"><?php esc_html_e( 'Products', 'enhanced' ); ?></span>
+				</div>
+				<?php endif; ?>
+			</div>
+			<?php endif; ?>
+
+			<a class="lx-browse-split__cta" href="<?php echo esc_url( $shop_url ); ?>">
+				<?php esc_html_e( 'Explore All', 'enhanced' ); ?>
+				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+					<path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
 			</a>
 		</div>
+
 		<div class="lx-browse-split__image">
 			<?php if ( $browse_img_url ) : ?>
 				<img src="<?php echo esc_url( $browse_img_url ); ?>" alt="" loading="lazy">
 			<?php else : ?>
-				<div class="lx-browse-split__fallback">
-					<?php esc_html_e( 'Upload browse image in Theme Settings', 'enhanced' ); ?>
-				</div>
+				<div class="lx-browse-split__fallback"></div>
 			<?php endif; ?>
+			<div class="lx-browse-split__image-badge">
+				<span><?php esc_html_e( 'New Season', 'enhanced' ); ?></span>
+			</div>
 		</div>
+
 	</div>
 
 </section>
