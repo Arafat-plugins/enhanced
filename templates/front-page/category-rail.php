@@ -7,7 +7,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$browse_img_url = enhanced_get_image_option_url( 'browse_model_image', 'enhanced-hero' );
+$browse_img_url   = enhanced_get_image_option_url( 'browse_model_image', 'enhanced-hero' );
+$browse_panel_bg  = enhanced_get_image_option_url( 'browse_panel_bg', 'enhanced-hero' );
+$browse_opacity   = (float) get_theme_mod( 'enhanced_browse_overlay_opacity', 0.78 );
+$browse_opacity   = max( 0, min( 1, $browse_opacity ) );
 ?>
 
 <section class="lx-browse-cats fp-reveal">
@@ -56,7 +59,15 @@ $browse_img_url = enhanced_get_image_option_url( 'browse_model_image', 'enhanced
 	<?php $product_count = enhanced_is_woo() ? (int) wp_count_posts( 'product' )->publish : 0; ?>
 	<div class="lx-browse-split">
 
-		<div class="lx-browse-split__text">
+		<div class="lx-browse-split__text<?php echo $browse_panel_bg ? ' has-panel-bg' : ''; ?>"
+			<?php if ( $browse_panel_bg ) : ?>
+				style="background-image: url('<?php echo esc_url( $browse_panel_bg ); ?>');"
+			<?php endif; ?>>
+
+			<?php if ( $browse_panel_bg ) : ?>
+			<div class="lx-browse-split__overlay" style="background: rgba(0,0,0,<?php echo esc_attr( $browse_opacity ); ?>);"></div>
+			<?php endif; ?>
+
 			<span class="lx-browse-split__kicker"><?php esc_html_e( 'Our Collections', 'enhanced' ); ?></span>
 
 			<h3 class="lx-browse-split__heading">

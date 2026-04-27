@@ -338,7 +338,22 @@ function enhanced_customizer( $wp_customize ) {
 		'description' => __( 'The right-side model image shown below the category tiles.', 'enhanced' ),
 	) );
 
-	enhanced_customizer_add_image( $wp_customize, 'browse_model_image', 'enhanced_browse', __( 'Browse · Model image', 'enhanced' ) );
+	enhanced_customizer_add_image( $wp_customize, 'browse_model_image', 'enhanced_browse', __( 'Browse · Model image (right panel)', 'enhanced' ) );
+
+	enhanced_customizer_add_image( $wp_customize, 'browse_panel_bg', 'enhanced_browse', __( 'Browse · Left panel background image', 'enhanced' ), __( 'Image shown behind the dark overlay on the left text panel.', 'enhanced' ) );
+
+	$wp_customize->add_setting( 'enhanced_browse_overlay_opacity', array(
+		'default'           => 0.78,
+		'sanitize_callback' => 'floatval',
+		'transport'         => 'refresh',
+	) );
+	$wp_customize->add_control( 'enhanced_browse_overlay_opacity', array(
+		'label'       => __( 'Browse · Left panel overlay opacity', 'enhanced' ),
+		'description' => __( '0 = fully transparent (image only) · 1 = fully black. Default: 0.78', 'enhanced' ),
+		'section'     => 'enhanced_browse',
+		'type'        => 'number',
+		'input_attrs' => array( 'min' => 0, 'max' => 1, 'step' => 0.05 ),
+	) );
 
 	/* ──────────────────────────────────────────────────────────
 	 * 5) FRONT PAGE — SALE IS ON

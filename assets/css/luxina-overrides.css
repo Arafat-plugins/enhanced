@@ -149,6 +149,8 @@
 
 .lx-browse-split__text {
   background: #111;
+  background-size: cover;
+  background-position: center;
   padding: 60px 52px 60px 48px;
   display: flex;
   flex-direction: column;
@@ -156,6 +158,20 @@
   gap: 0;
   position: relative;
   overflow: hidden;
+}
+
+/* Full-cover overlay div — opacity controlled by inline style */
+.lx-browse-split__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Lift all direct children above the overlay */
+.lx-browse-split__text > *:not(.lx-browse-split__overlay) {
+  position: relative;
+  z-index: 1;
 }
 
 /* Ghost decorative letterform behind content */
