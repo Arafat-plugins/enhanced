@@ -89,6 +89,12 @@ function enhanced_admin_save() {
 		'browse_model_image'      => 'absint',
 		'browse_panel_bg'         => 'absint',
 		'browse_overlay_opacity'  => 'floatval',
+		'browse_kicker'           => 'sanitize_text_field',
+		'browse_heading_line1'    => 'sanitize_text_field',
+		'browse_heading_line2'    => 'sanitize_text_field',
+		'browse_desc'             => 'sanitize_textarea_field',
+		'browse_btn_label'        => 'sanitize_text_field',
+		'browse_btn_url'          => 'esc_url_raw',
 		// Sale Is On
 		'sale_due_label' => 'sanitize_text_field',
 		// Sale banner
@@ -463,7 +469,19 @@ function enhanced_admin_tab_slides() {
 /* ── Tab: Shop & Banners ──────────────────────────────────── */
 
 function enhanced_admin_tab_shop() {
-	en_heading( __( 'Browse Categories', 'enhanced' ) );
+	en_heading( __( 'Browse Categories', 'enhanced' ), __( 'Controls the editorial banner that appears below the category tiles.', 'enhanced' ) );
+
+	echo '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
+	en_field( 'browse_kicker',        __( 'Kicker (small top label)', 'enhanced' ),   'text', 'Our Collections' );
+	en_field( 'browse_heading_line1', __( 'Heading — line 1 (outline)', 'enhanced' ), 'text', 'Browse' );
+	en_field( 'browse_heading_line2', __( 'Heading — line 2 (solid)', 'enhanced' ),   'text', 'Categories' );
+	en_field( 'browse_btn_label',     __( 'Button label', 'enhanced' ),               'text', 'Explore All' );
+	echo '</div>';
+	en_field( 'browse_desc',    __( 'Description text', 'enhanced' ),  'textarea', 'Curated collections that match your unique taste and lifestyle.' );
+	en_field( 'browse_btn_url', __( 'Button URL', 'enhanced' ),        'url', '',  __( 'Leave empty to use the shop URL.', 'enhanced' ) );
+
+	echo '<hr style="border:none;border-top:1px solid #eee;margin:20px 0;">';
+
 	en_image( 'browse_model_image', __( 'Model image (right panel)', 'enhanced' ), __( 'Right-side image in the Browse Categories section.', 'enhanced' ) );
 	en_image( 'browse_panel_bg', __( 'Left panel background image', 'enhanced' ), __( 'Sits behind the dark overlay on the left text panel. Leave empty for solid black.', 'enhanced' ) );
 
