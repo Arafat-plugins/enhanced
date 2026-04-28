@@ -450,6 +450,77 @@ function enhanced_get_product_sale_badge( $product ) {
 	);
 }
 
+function enhanced_get_product_card_attribute_options( $product ) {
+	if ( ! enhanced_is_woo() || ! $product instanceof WC_Product ) {
+		return array(
+			'colors' => array(),
+			'sizes'  => array(),
+		);
+	}
+
+	$options = array(
+		'colors' => array(),
+		'sizes'  => array(),
+	);
+
+	foreach ( $product->get_attributes() as $attribute ) {
+		if ( ! $attribute instanceof WC_Product_Attribute || ! $attribute->get_visible() ) {
+			continue;
+		}
+
+		$attribute_name  = $attribute->get_name();
+		$attribute_label = wc_attribute_label( $attribute_name );
+		$attribute_type  = enhanced_get_attribute_picker_type( $attribute_name, $attribute_label );
+
+		if ( ! in_array( $attribute_type, array( 'color', 'size' ), true ) ) {
+			continue;
+		}
+
+		$raw_values = array();
+
+		if ( $attribute->is_taxonomy() ) {
+			$terms = wc_get_product_terms(
+				$product->get_id(),
+				$attribute_name,
+				array( 'fields' => 'all' )
+			);
+
+			if ( is_wp_error( $terms ) ) {
+				$terms = array();
+			}
+
+			foreach ( $terms as $term ) {
+				$raw_values[] = $term->name;
+			}
+		} else {
+			foreach ( $attribute->get_options() as $option_value ) {
+				$raw_values[] = $option_value;
+			}
+		}
+
+		$fallback_value = $product->get_attribute( $attribute_name );
+		if ( $fallback_value ) {
+			$raw_values[] = $fallback_value;
+		}
+
+		foreach ( enhanced_split_attribute_option_values( $raw_values ) as $value ) {
+			if ( 'color' === $attribute_type ) {
+				$options['colors'][ strtolower( $value ) ] = array(
+					'label' => $value,
+					'color' => enhanced_get_color_swatch_value( $value ),
+				);
+			} else {
+				$options['sizes'][ strtolower( $value ) ] = $value;
+			}
+		}
+	}
+
+	$options['colors'] = array_values( $options['colors'] );
+	$options['sizes']  = array_values( $options['sizes'] );
+
+	return $options;
+}
+
 function enhanced_get_product_gallery_images( $product ) {
 	if ( ! enhanced_is_woo() || ! $product instanceof WC_Product ) {
 		return array();

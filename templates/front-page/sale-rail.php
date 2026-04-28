@@ -43,7 +43,7 @@ $due_label = enhanced_get_option( 'sale_due_label', __( 'Due Aug 24', 'enhanced'
 				<div class="lx-sale-promo__bottom">
 					<h3 class="lx-sale-promo__title"><?php echo esc_html( $product->get_name() ); ?></h3>
 					<span class="lx-btn lx-btn--white lx-btn--sm">
-						<?php esc_html_e( 'Check It Out', 'enhanced' ); ?>
+						<?php esc_html_e( 'Shop Now', 'enhanced' ); ?>
 						<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
 					</span>
 				</div>

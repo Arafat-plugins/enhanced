@@ -27,15 +27,7 @@ get_header();
 				<p class="page-banner__desc"><?php echo esc_html( $archive_desc ); ?></p>
 			<?php endif; ?>
 		</div>
-		<?php if ( $product_total ) : ?>
-			<p class="page-banner__count">
-				<?php printf(
-					/* translators: %d product count */
-					esc_html( _n( '%d product', '%d products', $product_total, 'enhanced' ) ),
-					$product_total
-				); ?>
-			</p>
-		<?php endif; ?>
+		<?php echo wp_kses_post( enhanced_get_shop_page_count_html( $product_total ) ); ?>
 	</div>
 </div>
 

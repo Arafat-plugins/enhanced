@@ -75,8 +75,6 @@
 		initWishlistToggle();
 		initHomeRails();
 		initMarqueeRails();
-		initHeroSlider();
-		initArrivalShowcase();
 	});
 
 	function requestFormSubmit(form) {
@@ -97,6 +95,7 @@
 
 	function initShopFeatures() {
 		initShopSidebar();
+		initShopViewToggle();
 		initFilterGroups();
 		initPriceSlider();
 		initFilterSearch();
@@ -513,6 +512,61 @@
 				requestFormSubmit(form);
 			});
 		}
+	}
+
+	function initShopViewToggle() {
+		const shell = document.querySelector("[data-shop-shell]");
+		if (!shell) return;
+
+		const productGrid = shell.querySelector("[data-shop-products]");
+		const buttons = Array.from(shell.querySelectorAll("[data-shop-view-button]"));
+		if (!productGrid || !buttons.length) return;
+
+		const storageKey = "enhancedShopView";
+		const getSavedView = function () {
+			try {
+				return window.localStorage.getItem(storageKey);
+			} catch (error) {
+				return "";
+			}
+		};
+
+		const saveView = function (view) {
+			try {
+				window.localStorage.setItem(storageKey, view);
+			} catch (error) {
+				return;
+			}
+		};
+
+		const setView = function (view, persist) {
+			const nextView = view === "list" ? "list" : "grid";
+
+			productGrid.dataset.shopView = nextView;
+			productGrid.classList.toggle("is-list-view", nextView === "list");
+			productGrid.classList.toggle("is-grid-view", nextView === "grid");
+
+			buttons.forEach(function (button) {
+				const isActive = button.dataset.shopViewButton === nextView;
+				button.classList.toggle("is-active", isActive);
+				button.setAttribute("aria-pressed", String(isActive));
+			});
+
+			if (persist) {
+				saveView(nextView);
+			}
+		};
+
+		setView(getSavedView() || productGrid.dataset.shopView || "grid", false);
+
+		buttons.forEach(function (button) {
+			if (button.dataset.shopViewReady === "true") return;
+
+			button.dataset.shopViewReady = "true";
+			button.addEventListener("click", function () {
+				setView(button.dataset.shopViewButton, true);
+			});
+		});
 	}
 
 	function initShopArchiveAjax() {
@@ -1147,7 +1201,7 @@
 				label.textContent = active ? "Saved to wishlist" : "Add to wishlist";
 
 				if (icon) {
-					icon.textContent = active ? "♥" : "♡";
+					icon.textContent = active ? "\u2665" : "\u2661";
 				}
 			};
 
@@ -1286,136 +1340,4 @@
 		});
 	}
 
-	function initHeroSlider() {
-		initMediaShowcase("[data-hero-slider]", "[data-hero-slide]", "[data-hero-thumb]", 5200);
-	}
-
-	function initArrivalShowcase() {
-		initMediaShowcase("[data-arrival-showcase]", "[data-arrival-slide]", "[data-arrival-thumb]", 4600);
-	}
-
-	function initMediaShowcase(rootSelector, slideSelector, thumbSelector, autoplayDelay) {
-		document.querySelectorAll(rootSelector).forEach(function (root) {
-			const slides = Array.from(root.querySelectorAll(slideSelector));
-			const thumbs = Array.from(root.querySelectorAll(thumbSelector));
-			if (slides.length <= 1 || thumbs.length !== slides.length) return;
-
-			let activeIndex = Math.max(
-				0,
-				slides.findIndex(function (slide) {
-					return slide.classList.contains("is-active");
-				})
-			);
-			let autoplayId = 0;
-			let touchStartX = 0;
-			let touchStartY = 0;
-
-			const setActive = function (nextIndex) {
-				activeIndex = (nextIndex + slides.length) % slides.length;
-
-				slides.forEach(function (slide, index) {
-					const isActive = index === activeIndex;
-					slide.classList.toggle("is-active", isActive);
-					slide.hidden = !isActive;
-					slide.setAttribute("aria-hidden", String(!isActive));
-				});
-
-				thumbs.forEach(function (thumb, index) {
-					const isActive = index === activeIndex;
-					thumb.classList.toggle("is-active", isActive);
-					thumb.setAttribute("aria-pressed", String(isActive));
-				});
-			};
-
-			const stopAutoplay = function () {
-				window.clearTimeout(autoplayId);
-			};
-
-			const queueAutoplay = function () {
-				stopAutoplay();
-
-				if (!autoplayDelay) {
-					return;
-				}
-
-				autoplayId = window.setTimeout(function () {
-					setActive(activeIndex + 1);
-					queueAutoplay();
-				}, autoplayDelay);
-			};
-
-			const focusThumb = function (index) {
-				if (thumbs[index] && typeof thumbs[index].focus === "function") {
-					thumbs[index].focus();
-				}
-			};
-
-			thumbs.forEach(function (thumb, index) {
-				thumb.addEventListener("click", function () {
-					setActive(index);
-					queueAutoplay();
-				});
-
-				thumb.addEventListener("keydown", function (event) {
-					let nextIndex = null;
-
-					if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-						nextIndex = activeIndex + 1;
-					}
-
-					if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-						nextIndex = activeIndex - 1;
-					}
-
-					if (null === nextIndex) {
-						return;
-					}
-
-					event.preventDefault();
-					setActive(nextIndex);
-					focusThumb(activeIndex);
-					queueAutoplay();
-				});
-			});
-
-			root.addEventListener("mouseenter", stopAutoplay);
-			root.addEventListener("mouseleave", queueAutoplay);
-			root.addEventListener("focusin", stopAutoplay);
-			root.addEventListener("focusout", function (event) {
-				if (!root.contains(event.relatedTarget)) {
-					queueAutoplay();
-				}
-			});
-
-			root.addEventListener(
-				"touchstart",
-				function (event) {
-					const touch = event.changedTouches[0];
-					touchStartX = touch.clientX;
-					touchStartY = touch.clientY;
-				},
-				{ passive: true }
-			);
-
-			root.addEventListener(
-				"touchend",
-				function (event) {
-					const touch = event.changedTouches[0];
-					const deltaX = touch.clientX - touchStartX;
-					const deltaY = touch.clientY - touchStartY;
-
-					if (Math.abs(deltaX) < 42 || Math.abs(deltaY) > 70) {
-						return;
-					}
-
-					setActive(deltaX < 0 ? activeIndex + 1 : activeIndex - 1);
-					queueAutoplay();
-				},
-				{ passive: true }
-			);
-
-			setActive(activeIndex);
-			queueAutoplay();
-		});
-	}
-})();
+			})();

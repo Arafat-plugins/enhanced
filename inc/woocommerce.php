@@ -24,7 +24,7 @@ remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wra
 remove_action( 'woocommerce_sidebar', 'woocommerce_get_sidebar', 10 );
 
 add_filter( 'loop_shop_columns', function() {
-	return 3;
+	return 4;
 } );
 
 add_filter( 'loop_shop_per_page', function() {

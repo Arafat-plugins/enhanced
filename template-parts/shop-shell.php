@@ -36,9 +36,18 @@ $clear_args   = function_exists( 'enhanced_get_shop_clear_query_args' )
 					<?php endif; ?>
 				</button>
 				<?php endif; ?>
-				<span class="shop-toolbar__count">
-					<?php woocommerce_result_count(); ?>
-				</span>
+				<div class="shop-toolbar__views" aria-label="<?php esc_attr_e( 'Product view', 'enhanced' ); ?>">
+					<button class="shop-toolbar__view is-active" type="button" data-shop-view-button="grid" aria-label="<?php esc_attr_e( 'Grid view', 'enhanced' ); ?>" aria-pressed="true">
+						<svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+							<path d="M2 2h4v4H2V2Zm7 0h4v4H9V2ZM2 9h4v4H2V9Zm7 0h4v4H9V9Z" stroke="currentColor" stroke-width="1.4"/>
+						</svg>
+					</button>
+					<button class="shop-toolbar__view" type="button" data-shop-view-button="list" aria-label="<?php esc_attr_e( 'List view', 'enhanced' ); ?>" aria-pressed="false">
+						<svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+							<path d="M2 3h11M2 7.5h11M2 12h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+						</svg>
+					</button>
+				</div>
 			</div>
 			<div class="shop-toolbar__right">
 				<?php woocommerce_catalog_ordering(); ?>
@@ -48,7 +57,7 @@ $clear_args   = function_exists( 'enhanced_get_shop_clear_query_args' )
 		<?php woocommerce_output_all_notices(); ?>
 
 		<?php if ( woocommerce_product_loop() ) : ?>
-			<div class="shop-product-grid">
+			<div class="shop-product-grid is-grid-view" data-shop-products data-shop-view="grid">
 				<?php while ( have_posts() ) : the_post(); ?>
 					<?php wc_get_template_part( 'content', 'product' ); ?>
 				<?php endwhile; ?>

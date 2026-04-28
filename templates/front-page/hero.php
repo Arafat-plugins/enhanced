@@ -44,8 +44,9 @@ $hero_off_label        = enhanced_get_option( 'hero_off_label', __( 'OFF', 'enha
 $hero_title_line1      = enhanced_get_option( 'hero_title_line1', $hero_title ?: __( 'Manage', 'enhanced' ) );
 $hero_title_line2      = enhanced_get_option( 'hero_title_line2', __( 'MBA Intern', 'enhanced' ) );
 $hero_accent_color     = sanitize_hex_color( enhanced_get_option( 'hero_accent_color', '#2f6f38' ) ) ?: '#2f6f38';
-$hero_overlay_color   = enhanced_get_option( 'hero_overlay_color', '#000000' );
-$hero_overlay_opacity = min( 100, max( 0, (int) enhanced_get_option( 'hero_overlay_opacity', 0 ) ) );
+$hero_overlay_color    = sanitize_hex_color( enhanced_get_option( 'hero_overlay_color', '#000000' ) ) ?: '#000000';
+$hero_overlay_opacity  = min( 100, max( 0, (int) enhanced_get_option( 'hero_overlay_opacity', 0 ) ) );
+$hero_overlay_alpha    = rtrim( rtrim( number_format( $hero_overlay_opacity / 100, 2, '.', '' ), '0' ), '.' );
 
 // Build right-panel slides from Enhanced Settings › Right Panel Slides.
 $rp_tr_interval = max( 2000, (int) enhanced_get_option( 'rp_tr_interval', 4000 ) );
@@ -56,7 +57,7 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 ?>
 
 <div class="lx-hero-grid" style="--lx-hero-accent: <?php echo esc_attr( $hero_accent_color ); ?>;">
-	<div class="lx-hero-left">
+	<div class="lx-hero-left" style="--lx-hero-overlay-color: <?php echo esc_attr( $hero_overlay_color ); ?>; --lx-hero-overlay-opacity: <?php echo esc_attr( $hero_overlay_alpha ); ?>;">
 		<div class="lx-hero-left__content">
 			<?php if ( $hero_eyebrow ) : ?>
 				<span class="lx-hero-offer">
@@ -158,10 +159,7 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 			<?php endif; ?>
 		</div>
 
-		<?php if ( $hero_overlay_opacity > 0 ) : ?>
-		<div class="lx-hero-left__overlay"
-		     style="background:<?php echo esc_attr( $hero_overlay_color ); ?>;opacity:<?php echo esc_attr( $hero_overlay_opacity / 100 ); ?>;"></div>
-		<?php endif; ?>
+		<div class="lx-hero-left__overlay" aria-hidden="true"></div>
 	</div>
 
 	<?php /* Top-right slider */ ?>

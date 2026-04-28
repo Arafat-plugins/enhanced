@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ENHANCED_VERSION', '1.1.3' );
+define( 'ENHANCED_VERSION', '1.1.11' );
 define( 'ENHANCED_DIR', trailingslashit( get_template_directory() ) );
 define( 'ENHANCED_URI', trailingslashit( get_template_directory_uri() ) );
 

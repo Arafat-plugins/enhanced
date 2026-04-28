@@ -336,14 +336,25 @@ function enhanced_get_shop_page_count_html( $product_total = null ) {
 		return '';
 	}
 
+	$per_page = (int) get_query_var( 'posts_per_page' );
+	if ( $per_page <= 0 ) {
+		$per_page = (int) apply_filters( 'loop_shop_per_page', 12 );
+	}
+
+	$current_page = max( 1, (int) get_query_var( 'paged' ) );
+	$first        = ( $per_page * ( $current_page - 1 ) ) + 1;
+	$last         = min( $product_total, $first + $per_page - 1 );
+
 	ob_start();
 	?>
 	<p class="page-banner__count">
 		<?php
 		printf(
-			/* translators: %d product count */
-			esc_html( _n( '%d product', '%d products', $product_total, 'enhanced' ) ),
-			$product_total
+			/* translators: 1: first product number, 2: last product number, 3: total product count. */
+			esc_html__( 'Showing %1$d-%2$d of %3$d results', 'enhanced' ),
+			(int) $first,
+			(int) $last,
+			(int) $product_total
 		);
 		?>
 	</p>

@@ -76,6 +76,18 @@ $render_product_card = static function ( $product_item, $i, $is_duplicate = fals
 					<p class="lx-sec-eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
 				<?php endif; ?>
 				<h2 class="lx-sec-title"><?php echo esc_html( $title ); ?></h2>
+				<?php if ( ! empty( $tabs ) && is_array( $tabs ) ) : ?>
+					<nav class="lx-product-tabs" aria-label="<?php echo esc_attr( $title ); ?>">
+						<?php foreach ( $tabs as $tab ) :
+							$tab_url = ( ! empty( $tab['url'] ) && ! is_wp_error( $tab['url'] ) ) ? $tab['url'] : $shop_url;
+							?>
+							<a class="lx-product-tab<?php echo ! empty( $tab['active'] ) ? ' is-active' : ''; ?>"
+								href="<?php echo esc_url( $tab_url ); ?>">
+								<?php echo esc_html( $tab['label'] ?? '' ); ?>
+							</a>
+						<?php endforeach; ?>
+					</nav>
+				<?php endif; ?>
 			</div>
 			<div class="lx-product-rail__actions">
 				<a class="lx-sec-link" href="<?php echo esc_url( $link_url ); ?>">

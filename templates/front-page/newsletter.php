@@ -29,7 +29,7 @@ $newsletter_desc = enhanced_get_option(
 						required
 						aria-label="<?php esc_attr_e( 'Email address', 'enhanced' ); ?>">
 					<button class="fp2-newsletter__btn" type="submit">
-						<?php esc_html_e( 'Check It Out', 'enhanced' ); ?>
+						<?php esc_html_e( 'Subscribe', 'enhanced' ); ?>
 					</button>
 				</form>
 			</div>

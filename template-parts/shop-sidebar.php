@@ -34,7 +34,7 @@ $clear_url = remove_query_arg(
 			<span class="en-filters__icon" aria-hidden="true">
 				<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 3h13M4 8h8M6.5 13h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
 			</span>
-			<h2 class="en-filters__title"><?php esc_html_e( 'Refine', 'enhanced' ); ?></h2>
+			<h2 class="en-filters__title"><?php esc_html_e( 'Filters', 'enhanced' ); ?></h2>
 			<?php if ( $active_n > 0 ) : ?>
 				<span class="en-filters__badge"><?php echo esc_html( $active_n ); ?></span>
 			<?php endif; ?>
@@ -82,55 +82,6 @@ $clear_url = remove_query_arg(
 			</button>
 		<?php endif; ?>
 	</form>
-
-	<!-- Active chips -->
-	<?php if ( $active_n > 0 ) : ?>
-	<div class="en-chips" aria-label="<?php esc_attr_e( 'Active filters', 'enhanced' ); ?>">
-		<?php if ( $active['search'] ) : ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'search' ) ); ?>">
-				<span class="en-chip__k"><?php esc_html_e( 'Search', 'enhanced' ); ?>:</span>
-				<span class="en-chip__v"><?php echo esc_html( $active['search'] ); ?></span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endif; ?>
-
-		<?php foreach ( $active['category'] as $slug ) :
-			$term = get_term_by( 'slug', $slug, 'product_cat' );
-			if ( ! $term ) continue; ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'category', $slug ) ); ?>">
-				<span class="en-chip__v"><?php echo esc_html( $term->name ); ?></span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endforeach; ?>
-
-		<?php foreach ( $active['color'] as $cname ) :
-			$sw = $colors[ $cname ] ?? '#ccc'; ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'color', $cname ) ); ?>">
-				<span class="en-chip__dot" style="background:<?php echo esc_attr( $sw ); ?>"></span>
-				<span class="en-chip__v"><?php echo esc_html( $cname ); ?></span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endforeach; ?>
-
-		<?php foreach ( $active['size'] as $sname ) : ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'size', $sname ) ); ?>">
-				<span class="en-chip__v"><?php echo esc_html( $sname ); ?></span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endforeach; ?>
-
-		<?php if ( $active['min'] !== null || $active['max'] !== null ) : ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'price' ) ); ?>">
-				<span class="en-chip__v">
-					<?php echo wp_kses_post( wc_price( $cur_min ) ); ?> – <?php echo wp_kses_post( wc_price( $cur_max ) ); ?>
-				</span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endif; ?>
-
-		<a class="en-chips__clear" href="<?php echo esc_url( $clear_url ); ?>"><?php esc_html_e( 'Clear all', 'enhanced' ); ?></a>
-	</div>
-	<?php endif; ?>
 
 	<!-- Groups -->
 	<div class="en-filters__groups">
