@@ -24,7 +24,7 @@ remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wra
 remove_action( 'woocommerce_sidebar', 'woocommerce_get_sidebar', 10 );
 
 add_filter( 'loop_shop_columns', function() {
-	return 3;
+	return 4;
 } );
 
 add_filter( 'loop_shop_per_page', function() {
@@ -58,6 +58,26 @@ function enhanced_product_tabs( $tabs ) {
 	return $tabs;
 }
 add_filter( 'woocommerce_product_tabs', 'enhanced_product_tabs', 20 );
+
+/**
+ * The theme renders its own product gallery, so Woo's default gallery assets are not needed.
+ */
+function enhanced_trim_single_product_gallery_assets() {
+	if ( is_admin() || ! enhanced_is_woo() || ! function_exists( 'is_product' ) || ! is_product() ) {
+		return;
+	}
+
+	foreach ( array( 'photoswipe', 'photoswipe-default-skin' ) as $style_handle ) {
+		wp_dequeue_style( $style_handle );
+	}
+
+	foreach ( array( 'wc-flexslider', 'wc-photoswipe', 'wc-photoswipe-ui-default', 'wc-single-product', 'wc-zoom' ) as $script_handle ) {
+		wp_dequeue_script( $script_handle );
+	}
+
+	remove_action( 'wp_footer', 'woocommerce_photoswipe' );
+}
+add_action( 'wp_enqueue_scripts', 'enhanced_trim_single_product_gallery_assets', 1000 );
 
 function enhanced_render_simple_product_selection_fields() {
 	global $product;

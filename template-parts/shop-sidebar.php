@@ -13,12 +13,17 @@ $categories  = enhanced_get_product_categories();
 $colors      = enhanced_get_color_options();
 $sizes       = enhanced_get_size_options();
 list( $price_min, $price_max ) = enhanced_get_price_range();
+$category_open = ! empty( $active['category'] );
 
 $cur_min = $active['min'] !== null ? max( $price_min, (int) $active['min'] ) : $price_min;
 $cur_max = $active['max'] !== null ? min( $price_max, (int) $active['max'] ) : $price_max;
 
 $shop_url = enhanced_is_woo() ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/shop/' );
-$clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter_size', 'min_price', 'max_price', 'paged' ) );
+$clear_url = remove_query_arg(
+	function_exists( 'enhanced_get_shop_clear_query_args' )
+		? enhanced_get_shop_clear_query_args()
+		: array( 's', 'filter_cat', 'filter_color', 'filter_size', 'min_price', 'max_price', 'paged', 'enhanced_shop_ajax' )
+);
 ?>
 
 <aside id="shop-sidebar" class="en-filters" aria-label="<?php esc_attr_e( 'Product filters', 'enhanced' ); ?>" data-filter-root>
@@ -29,7 +34,7 @@ $clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter
 			<span class="en-filters__icon" aria-hidden="true">
 				<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 3h13M4 8h8M6.5 13h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
 			</span>
-			<h2 class="en-filters__title"><?php esc_html_e( 'Refine', 'enhanced' ); ?></h2>
+			<h2 class="en-filters__title"><?php esc_html_e( 'Filters', 'enhanced' ); ?></h2>
 			<?php if ( $active_n > 0 ) : ?>
 				<span class="en-filters__badge"><?php echo esc_html( $active_n ); ?></span>
 			<?php endif; ?>
@@ -62,6 +67,9 @@ $clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter
 				<input type="hidden" name="<?php echo esc_attr( $carry ); ?>[]" value="<?php echo esc_attr( wp_unslash( $v ) ); ?>">
 			<?php endforeach;
 		endforeach; ?>
+		<?php if ( ! empty( $_GET['orderby'] ) ) : ?>
+			<input type="hidden" name="orderby" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['orderby'] ) ) ); ?>">
+		<?php endif; ?>
 		<?php if ( $active['min'] !== null ) : ?>
 			<input type="hidden" name="min_price" value="<?php echo esc_attr( $active['min'] ); ?>">
 		<?php endif; ?>
@@ -75,62 +83,13 @@ $clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter
 		<?php endif; ?>
 	</form>
 
-	<!-- Active chips -->
-	<?php if ( $active_n > 0 ) : ?>
-	<div class="en-chips" aria-label="<?php esc_attr_e( 'Active filters', 'enhanced' ); ?>">
-		<?php if ( $active['search'] ) : ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'search' ) ); ?>">
-				<span class="en-chip__k"><?php esc_html_e( 'Search', 'enhanced' ); ?>:</span>
-				<span class="en-chip__v"><?php echo esc_html( $active['search'] ); ?></span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endif; ?>
-
-		<?php foreach ( $active['category'] as $slug ) :
-			$term = get_term_by( 'slug', $slug, 'product_cat' );
-			if ( ! $term ) continue; ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'category', $slug ) ); ?>">
-				<span class="en-chip__v"><?php echo esc_html( $term->name ); ?></span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endforeach; ?>
-
-		<?php foreach ( $active['color'] as $cname ) :
-			$sw = $colors[ $cname ] ?? '#ccc'; ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'color', $cname ) ); ?>">
-				<span class="en-chip__dot" style="background:<?php echo esc_attr( $sw ); ?>"></span>
-				<span class="en-chip__v"><?php echo esc_html( $cname ); ?></span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endforeach; ?>
-
-		<?php foreach ( $active['size'] as $sname ) : ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'size', $sname ) ); ?>">
-				<span class="en-chip__v"><?php echo esc_html( $sname ); ?></span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endforeach; ?>
-
-		<?php if ( $active['min'] !== null || $active['max'] !== null ) : ?>
-			<a class="en-chip" href="<?php echo esc_url( enhanced_filter_remove_url( 'price' ) ); ?>">
-				<span class="en-chip__v">
-					<?php echo wp_kses_post( wc_price( $cur_min ) ); ?> – <?php echo wp_kses_post( wc_price( $cur_max ) ); ?>
-				</span>
-				<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-			</a>
-		<?php endif; ?>
-
-		<a class="en-chips__clear" href="<?php echo esc_url( $clear_url ); ?>"><?php esc_html_e( 'Clear all', 'enhanced' ); ?></a>
-	</div>
-	<?php endif; ?>
-
 	<!-- Groups -->
 	<div class="en-filters__groups">
 
 		<!-- Category -->
 		<?php if ( ! empty( $categories ) ) : ?>
-		<section class="en-group" data-open="true">
-			<button type="button" class="en-group__head" aria-expanded="true">
+		<section class="en-group" data-open="<?php echo $category_open ? 'true' : 'false'; ?>">
+			<button type="button" class="en-group__head" aria-expanded="<?php echo $category_open ? 'true' : 'false'; ?>">
 				<span class="en-group__label"><?php esc_html_e( 'Category', 'enhanced' ); ?></span>
 				<span class="en-group__count"><?php echo count( $categories ); ?></span>
 				<svg class="en-group__chev" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -234,6 +193,9 @@ $clear_url = remove_query_arg( array( 's', 'filter_cat', 'filter_color', 'filter
 							<input type="hidden" name="<?php echo esc_attr( $carry ); ?>[]" value="<?php echo esc_attr( wp_unslash( $v ) ); ?>">
 						<?php endforeach;
 					endforeach; ?>
+					<?php if ( ! empty( $_GET['orderby'] ) ) : ?>
+						<input type="hidden" name="orderby" value="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['orderby'] ) ) ); ?>">
+					<?php endif; ?>
 
 					<button type="submit" class="en-price__apply"><?php esc_html_e( 'Apply', 'enhanced' ); ?></button>
 				</form>

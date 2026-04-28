@@ -1,6 +1,6 @@
 <?php
 /**
- * Front page layout — Luxina structure.
+ * Front page layout - suggested storefront structure.
  *
  * @package Enhanced
  */
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 <main id="primary" class="site-main">
 
-	<?php /* 1. 3-panel hero */ ?>
+	<?php /* 1. Hero */ ?>
 	<?php
 	enhanced_get_template(
 		'front-page/hero',
@@ -24,23 +24,21 @@ defined( 'ABSPATH' ) || exit;
 	);
 	?>
 
-	<?php /* 2. Browse Categories */ ?>
+	<?php /* 2. Trust badges */ ?>
+	<?php enhanced_get_template( 'front-page/trust-badges' ); ?>
+
+	<?php /* 3. Shop by category */ ?>
 	<?php if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) : ?>
 		<?php enhanced_get_template( 'front-page/category-rail', compact( 'categories', 'shop_url' ) ); ?>
 	<?php endif; ?>
 
-	<?php /* 3. Sale Is On */ ?>
-	<?php if ( ! empty( $sale_items ) || ! empty( $featured ) ) : ?>
-		<?php enhanced_get_template( 'front-page/sale-rail', compact( 'sale_items', 'featured', 'shop_url' ) ); ?>
-	<?php endif; ?>
-
-	<?php /* 4. New Arrivals carousel */ ?>
+	<?php /* 4. New arrivals */ ?>
 	<?php if ( ! empty( $arrivals ) ) : ?>
 		<?php
 		enhanced_get_template(
 			'front-page/product-rail',
 			array(
-				'section_classes' => '',
+				'section_classes' => 'lx-product-rail--grid',
 				'products'        => array_slice( $arrivals, 0, 8 ),
 				'shop_url'        => $shop_url,
 				'eyebrow'         => '',
@@ -54,40 +52,44 @@ defined( 'ABSPATH' ) || exit;
 		?>
 	<?php endif; ?>
 
-	<?php /* 5. Full-width sale banner */ ?>
-	<?php enhanced_get_template( 'front-page/sale-banner', compact( 'shop_url' ) ); ?>
-
-	<?php /* 6. New Sale For Women */ ?>
-	<?php if ( ! empty( $sale_items ) ) : ?>
-		<?php
-		enhanced_get_template(
-			'front-page/product-rail',
-			array(
-				'section_classes' => '',
-				'products'        => array_slice( $sale_items, 0, 8 ),
-				'shop_url'        => $shop_url,
-				'eyebrow'         => '',
-				'title'           => __( 'New Sale For Women', 'enhanced' ),
-				'link_label'      => __( 'View All', 'enhanced' ),
-				'link_url'        => add_query_arg( 'orderby', 'price', $shop_url ),
-				'prev_label'      => __( 'Previous', 'enhanced' ),
-				'next_label'      => __( 'Next', 'enhanced' ),
-			)
-		);
-		?>
+	<?php /* 5. Sale promos */ ?>
+	<?php if ( ! empty( $sale_items ) || ! empty( $featured ) ) : ?>
+		<?php enhanced_get_template( 'front-page/sale-rail', compact( 'sale_items', 'featured', 'shop_url' ) ); ?>
 	<?php endif; ?>
 
-	<?php /* 7. New Sale For Men */ ?>
-	<?php if ( ! empty( $featured ) ) : ?>
+	<?php /* 6. Dark benefit banner */ ?>
+	<?php enhanced_get_template( 'front-page/sale-banner', compact( 'shop_url' ) ); ?>
+
+	<?php /* 7. Featured products */ ?>
+	<?php if ( ! empty( $featured ) || ! empty( $arrivals ) ) : ?>
 		<?php
+		$featured_tabs = array(
+			array(
+				'label'  => __( 'Women', 'enhanced' ),
+				'url'    => $women_cat ? get_term_link( $women_cat ) : $shop_url,
+				'active' => true,
+			),
+			array(
+				'label'  => __( 'Men', 'enhanced' ),
+				'url'    => $men_cat ? get_term_link( $men_cat ) : $shop_url,
+				'active' => false,
+			),
+			array(
+				'label'  => __( 'Sale', 'enhanced' ),
+				'url'    => add_query_arg( 'orderby', 'price', $shop_url ),
+				'active' => false,
+			),
+		);
+
 		enhanced_get_template(
 			'front-page/product-rail',
 			array(
-				'section_classes' => 'lx-product-rail--alt',
-				'products'        => array_slice( $featured, 0, 8 ),
+				'section_classes' => 'lx-product-rail--grid lx-product-rail--featured',
+				'products'        => array_slice( ! empty( $featured ) ? $featured : $arrivals, 0, 8 ),
 				'shop_url'        => $shop_url,
 				'eyebrow'         => '',
-				'title'           => __( 'New Sale For Men', 'enhanced' ),
+				'title'           => __( 'Featured Products', 'enhanced' ),
+				'tabs'            => $featured_tabs,
 				'link_label'      => __( 'View All', 'enhanced' ),
 				'link_url'        => $shop_url,
 				'prev_label'      => __( 'Previous', 'enhanced' ),

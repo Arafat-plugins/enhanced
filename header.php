@@ -23,6 +23,23 @@ $contact_mailto = $contact_email ? sanitize_email( $contact_email ) : '';
 
 <a class="screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'enhanced' ); ?></a>
 
+<div class="utility-bar">
+	<div class="container utility-bar__inner">
+		<p class="utility-bar__promo"><?php esc_html_e( 'Free shipping on orders over $50', 'enhanced' ); ?></p>
+		<div class="utility-bar__right">
+			<a class="utility-bar__link" href="<?php echo esc_url( enhanced_account_url() ); ?>">
+				<?php esc_html_e( 'Account', 'enhanced' ); ?>
+			</a>
+			<a class="utility-bar__link" href="<?php echo esc_url( home_url( '/wishlist/' ) ); ?>">
+				<?php esc_html_e( 'Wishlist', 'enhanced' ); ?>
+			</a>
+			<a class="utility-bar__link" href="<?php echo esc_url( enhanced_cart_url() ); ?>">
+				<?php esc_html_e( 'Cart', 'enhanced' ); ?>
+			</a>
+		</div>
+	</div>
+</div>
+
 <header class="site-header" data-site-header>
 
 	<!-- Top row: logo | inline search | icons -->

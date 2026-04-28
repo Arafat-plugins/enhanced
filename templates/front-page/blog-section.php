@@ -18,7 +18,7 @@ $blog_desc = enhanced_get_option(
 <section class="lx-blog fp-reveal">
 	<div class="container">
 		<div class="lx-sec-head lx-blog__head">
-			<h2 class="lx-sec-title"><?php esc_html_e( 'Blog', 'enhanced' ); ?></h2>
+			<h2 class="lx-sec-title"><?php esc_html_e( 'From The Blog', 'enhanced' ); ?></h2>
 			<?php if ( $blog_desc ) : ?>
 				<p class="lx-blog__desc"><?php echo esc_html( $blog_desc ); ?></p>
 			<?php endif; ?>
@@ -56,7 +56,7 @@ $blog_desc = enhanced_get_option(
 							<p class="lx-blog-card__excerpt"><?php echo esc_html( $excerpt ); ?></p>
 						<?php endif; ?>
 						<a class="lx-blog-card__details" href="<?php echo esc_url( get_permalink( $post ) ); ?>">
-							<?php esc_html_e( 'Details', 'enhanced' ); ?>
+							<?php esc_html_e( 'Read More', 'enhanced' ); ?>
 						</a>
 					</div>
 				</article>

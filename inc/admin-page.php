@@ -69,11 +69,16 @@ function enhanced_admin_save() {
 		'hero_overlay_opacity' => 'absint',
 		'hero_eyebrow'         => 'sanitize_text_field',
 		'hero_discount'        => 'sanitize_text_field',
+		'hero_discount_suffix' => 'sanitize_text_field',
+		'hero_off_label'       => 'sanitize_text_field',
 		'hero_description'     => 'sanitize_textarea_field',
+		'hero_title_line1'     => 'sanitize_text_field',
+		'hero_title_line2'     => 'sanitize_text_field',
 		'hero_primary_label'   => 'sanitize_text_field',
 		'hero_primary_url'     => 'esc_url_raw',
 		'hero_secondary_label' => 'sanitize_text_field',
 		'hero_secondary_url'   => 'esc_url_raw',
+		'hero_accent_color'    => 'sanitize_hex_color',
 		'hero_media_type'      => 'sanitize_key',
 		'hero_image'           => 'absint',
 		'hero_video_upload'    => 'absint',
@@ -85,8 +90,6 @@ function enhanced_admin_save() {
 		'rp_br_title'    => 'sanitize_text_field',
 		'rp_tr_opacity'  => 'absint',
 		'rp_br_opacity'  => 'absint',
-		// Browse categories
-		'browse_model_image' => 'absint',
 		// Sale Is On
 		'sale_due_label' => 'sanitize_text_field',
 		// Sale banner
@@ -325,11 +328,16 @@ function enhanced_admin_render_page() {
 function enhanced_admin_tab_hero() {
 	en_heading( __( 'Hero – Left Panel', 'enhanced' ), __( 'The large panel on the left side of the homepage hero.', 'enhanced' ) );
 
-	en_field( 'hero_eyebrow',       __( 'Eyebrow / Badge text', 'enhanced' ),  'text',     'Limited Offers' );
-	en_field( 'hero_discount',      __( 'Discount number', 'enhanced' ),        'text',     '50', __( 'Number only, e.g. 50', 'enhanced' ) );
-	en_field( 'hero_description',   __( 'Description', 'enhanced' ),            'textarea', 'Discover quality fashion…' );
-	en_field( 'hero_primary_label', __( 'Button label', 'enhanced' ),           'text',     'Explore Product' );
-	en_field( 'hero_primary_url',   __( 'Button URL', 'enhanced' ),             'url' );
+	en_field( 'hero_eyebrow',         __( 'Offer label', 'enhanced' ),           'text',     'Limited Time Offer' );
+	en_field( 'hero_discount',        __( 'Discount number', 'enhanced' ),       'text',     '49', __( 'Number only, e.g. 49', 'enhanced' ) );
+	en_field( 'hero_discount_suffix', __( 'Discount suffix', 'enhanced' ),       'text',     '%' );
+	en_field( 'hero_off_label',       __( 'Discount label', 'enhanced' ),        'text',     'OFF' );
+	en_field( 'hero_description',     __( 'Intro text', 'enhanced' ),            'textarea', 'This is the first time' );
+	en_field( 'hero_title_line1',     __( 'Headline line 1', 'enhanced' ),       'text',     'Manage' );
+	en_field( 'hero_title_line2',     __( 'Headline line 2', 'enhanced' ),       'text',     'MBA Intern' );
+	en_field( 'hero_primary_label',   __( 'Button label', 'enhanced' ),          'text',     'Explore Product' );
+	en_field( 'hero_primary_url',     __( 'Button URL', 'enhanced' ),            'url' );
+	en_color( 'hero_accent_color', __( 'Hero accent colour', 'enhanced' ), '#2f6f38' );
 
 	echo '<hr class="en-divider">';
 	en_heading( __( 'Hero Media', 'enhanced' ) );
@@ -461,10 +469,6 @@ function enhanced_admin_tab_slides() {
 /* ── Tab: Shop & Banners ──────────────────────────────────── */
 
 function enhanced_admin_tab_shop() {
-	en_heading( __( 'Browse Categories', 'enhanced' ) );
-	en_image( 'browse_model_image', __( 'Model image', 'enhanced' ), __( 'Right-side image in the Browse Categories section.', 'enhanced' ) );
-
-	echo '<hr class="en-divider">';
 	en_heading( __( 'Sale Is On', 'enhanced' ) );
 	en_field( 'sale_due_label', __( 'Due-date badge', 'enhanced' ), 'text', 'Due Aug 24', __( 'Shown on promo cards.', 'enhanced' ) );
 

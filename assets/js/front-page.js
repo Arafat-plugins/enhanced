@@ -44,32 +44,8 @@
   }
 
   /* ── Category nav arrows ─────────────────────────────────── */
-  function initCatArrows() {
-    var track = document.querySelector('[data-lx-cat-track]');
-    var prev  = document.querySelector('[data-lx-cat-prev]');
-    var next  = document.querySelector('[data-lx-cat-next]');
-    if (!track) return;
-    prev && prev.addEventListener('click', function () {
-      track.scrollBy({ left: -260, behavior: 'smooth' });
-    });
-    next && next.addEventListener('click', function () {
-      track.scrollBy({ left: 260, behavior: 'smooth' });
-    });
-  }
-
-  /* ── Subnav active on click ──────────────────────────────── */
-  function initSubnav() {
-    document.querySelectorAll('.lx-subnav__link').forEach(function (link) {
-      link.addEventListener('click', function () {
-        document.querySelectorAll('.lx-subnav__link').forEach(function (l) {
-          l.classList.remove('active');
-        });
-        link.classList.add('active');
-      });
-    });
-  }
-
-  /* ── Sticky header shadow ────────────────────────────────── */
+    /* ── Subnav active on click ──────────────────────────────── */
+    /* ── Sticky header shadow ────────────────────────────────── */
   function initStickyHeader() {
     var header = document.querySelector('.site-header');
     if (!header) return;
@@ -135,20 +111,43 @@
     });
   }
 
-  /* ── Right panel sliders (TR + BR auto-fade) ────────────── */
+  /* ── Right panel sliders (TR + BR — randomised transitions) ─ */
   function initRpSliders() {
+    var STYLES  = ['fade', 'slide-right', 'slide-left', 'slide-up', 'slide-down', 'zoom-in', 'zoom-out', 'rotate'];
+    var ANIM_MS = 860;
+
     document.querySelectorAll('[data-lx-rp-slider]').forEach(function (slider) {
-      var slides  = slider.querySelectorAll('.lx-rp-slide');
-      var total   = slides.length;
+      var slides    = slider.querySelectorAll('.lx-rp-slide');
+      var total     = slides.length;
       if (total <= 1) return;
 
-      var current  = 0;
-      var interval = Math.max(2000, parseInt(slider.getAttribute('data-interval'), 10) || 4000);
-      var FADE_MS  = 750;
+      var current   = 0;
+      var lastStyle = '';
+      var interval  = Math.max(2000, parseInt(slider.getAttribute('data-interval'), 10) || 4000);
+
+      function clearAnim(slide) {
+        STYLES.forEach(function (s) {
+          slide.classList.remove('anim-in--' + s, 'anim-out--' + s);
+        });
+      }
+
+      function pickStyle() {
+        var pool = STYLES.filter(function (s) { return s !== lastStyle; });
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
 
       setInterval(function () {
-        var prev    = current;
-        current     = (current + 1) % total;
+        var prev  = current;
+        current   = (current + 1) % total;
+
+        var style = pickStyle();
+        lastStyle = style;
+
+        clearAnim(slides[prev]);
+        clearAnim(slides[current]);
+
+        slides[current].classList.add('anim-in--' + style);
+        slides[prev].classList.add('anim-out--' + style);
 
         slides[prev].classList.remove('is-active');
         slides[prev].classList.add('is-leaving');
@@ -156,12 +155,14 @@
 
         setTimeout(function () {
           slides[prev].classList.remove('is-leaving');
-        }, FADE_MS);
+          clearAnim(slides[prev]);
+        }, ANIM_MS);
       }, interval);
     });
   }
 
-  /* ── Touch swipe on hero rail ────────────────────────────── */
+  /* ── Category tiles pagination + mobile carousel dots ──── */
+    /* ── Touch swipe on hero rail ────────────────────────────── */
   function initHeroTouch() {
     var rails = document.querySelectorAll('.lx-sale-rail, .lx-rail-track');
     rails.forEach(function (rail) {
@@ -201,8 +202,6 @@
   ready(function () {
     initReveal();
     initRailArrows();
-    initCatArrows();
-    initSubnav();
     initStickyHeader();
     initVideoBg();
     initHeroEmbedAutoplay();

@@ -1,6 +1,6 @@
 <?php
 /**
- * Product card template.
+ * Product card template for shop archives.
  *
  * @package Enhanced
  */
@@ -14,118 +14,135 @@ if ( ! $product || ! $product->is_visible() ) {
 }
 
 $product_id          = $product->get_id();
+$product_name        = $product->get_name();
 $permalink           = get_permalink( $product_id );
-$image_id            = $product->get_image_id();
-$image_url           = $image_id ? wp_get_attachment_image_url( $image_id, 'enhanced-card' ) : wc_placeholder_img_src( 'enhanced-card' );
-$secondary_image_url = enhanced_get_product_secondary_image_url( $product );
-$has_secondary_image = ! empty( $secondary_image_url );
-$image_alt           = $image_id ? get_post_meta( $image_id, '_wp_attachment_image_alt', true ) : '';
+$card_media          = enhanced_get_product_card_media( $product );
+$has_secondary_image = ! empty( $card_media['secondary_url'] );
 $primary_category    = enhanced_get_product_primary_category_name( $product_id );
 $on_sale             = $product->is_on_sale();
 $date_created        = $product->get_date_created();
 $is_new              = $date_created && ( time() - $date_created->getTimestamp() ) < ( 21 * DAY_IN_SECONDS );
-$avg_rating          = (float) $product->get_average_rating();
-$rating_cnt          = (int) $product->get_rating_count();
 $price_html          = $product->get_price_html();
-$stock_badge         = enhanced_get_product_stock_badge( $product );
-$sale_badge          = '';
-
-if ( $on_sale && $product->get_regular_price() && $product->get_sale_price() ) {
-	$regular = (float) $product->get_regular_price();
-	$sale    = (float) $product->get_sale_price();
-
-	if ( $regular > 0 && $sale > 0 && $sale < $regular ) {
-		$percentage = (int) round( ( ( $regular - $sale ) / $regular ) * 100 );
-
-		if ( $percentage > 0 ) {
-			$sale_badge = sprintf(
-				/* translators: %d percentage off */
-				__( '-%d%%', 'enhanced' ),
-				$percentage
-			);
-		}
-	}
-}
+$sale_badge          = enhanced_get_product_sale_badge( $product );
+$card_options        = function_exists( 'enhanced_get_product_card_attribute_options' )
+	? enhanced_get_product_card_attribute_options( $product )
+	: array( 'colors' => array(), 'sizes' => array() );
+$card_colors         = array_slice( $card_options['colors'], 0, 4 );
+$card_sizes          = array_slice( $card_options['sizes'], 0, 3 );
+$average_rating      = (float) $product->get_average_rating();
+$rating_display      = $average_rating > 0 ? number_format_i18n( $average_rating, 1 ) : '';
+$add_to_cart_classes = array_filter(
+	array(
+		'button',
+		'product-card__buy',
+		'product_type_' . $product->get_type(),
+		$product->is_purchasable() && $product->is_in_stock() ? 'add_to_cart_button' : '',
+		$product->supports( 'ajax_add_to_cart' ) && $product->is_purchasable() && $product->is_in_stock() ? 'ajax_add_to_cart' : '',
+	)
+);
 ?>
 
-<div class="product-card<?php echo $has_secondary_image ? ' product-card--has-secondary' : ''; ?>">
-	<div class="product-card__media">
+<article class="product-card<?php echo $has_secondary_image ? ' product-card--has-secondary' : ''; ?>">
+	<a class="product-card__media" href="<?php echo esc_url( $permalink ); ?>">
 		<img
 			class="product-card__image product-card__image--primary"
-			src="<?php echo esc_url( $image_url ); ?>"
-			alt="<?php echo esc_attr( $image_alt ?: $product->get_name() ); ?>"
+			src="<?php echo esc_url( $card_media['primary_url'] ); ?>"
+			alt="<?php echo esc_attr( $card_media['alt'] ); ?>"
 			loading="lazy"
 		>
 
 		<?php if ( $has_secondary_image ) : ?>
 			<img
 				class="product-card__image product-card__image--secondary"
-				src="<?php echo esc_url( $secondary_image_url ); ?>"
-				alt="<?php echo esc_attr( $image_alt ?: $product->get_name() ); ?>"
+				src="<?php echo esc_url( $card_media['secondary_url'] ); ?>"
+				alt="<?php echo esc_attr( $card_media['alt'] ); ?>"
 				loading="lazy"
 			>
 		<?php endif; ?>
 
-		<div class="product-card__badges">
-			<?php if ( $sale_badge ) : ?>
-				<span class="product-card__badge product-card__badge--sale"><?php echo esc_html( $sale_badge ); ?></span>
-			<?php elseif ( $on_sale ) : ?>
-				<span class="product-card__badge product-card__badge--sale"><?php esc_html_e( 'Sale', 'enhanced' ); ?></span>
-			<?php endif; ?>
+		<?php if ( $sale_badge || $on_sale || $is_new ) : ?>
+			<span class="product-card__badges">
+				<?php if ( $sale_badge ) : ?>
+					<span class="product-card__badge product-card__badge--sale"><?php echo esc_html( $sale_badge ); ?></span>
+				<?php elseif ( $on_sale ) : ?>
+					<span class="product-card__badge product-card__badge--sale"><?php esc_html_e( 'Sale', 'enhanced' ); ?></span>
+				<?php endif; ?>
 
-			<?php if ( $is_new ) : ?>
-				<span class="product-card__badge product-card__badge--new"><?php esc_html_e( 'New', 'enhanced' ); ?></span>
-			<?php endif; ?>
-		</div>
+				<?php if ( $is_new ) : ?>
+					<span class="product-card__badge product-card__badge--new"><?php esc_html_e( 'New', 'enhanced' ); ?></span>
+				<?php endif; ?>
+			</span>
+		<?php endif; ?>
+	</a>
 
-		<div class="product-card__actions">
-			<?php woocommerce_template_loop_add_to_cart(); ?>
-		</div>
-	</div>
+	<button
+		class="product-card__wishlist"
+		type="button"
+		data-wishlist-toggle
+		data-product-id="<?php echo esc_attr( $product_id ); ?>"
+		aria-pressed="false"
+		aria-label="<?php esc_attr_e( 'Add to wishlist', 'enhanced' ); ?>"
+	>
+		<span class="product-details__wishlist-icon" aria-hidden="true">&#9825;</span>
+		<span class="screen-reader-text" data-wishlist-label><?php esc_html_e( 'Add to wishlist', 'enhanced' ); ?></span>
+	</button>
 
 	<div class="product-card__body">
-		<?php if ( $primary_category ) : ?>
-			<span class="product-card__eyebrow"><?php echo esc_html( $primary_category ); ?></span>
-		<?php endif; ?>
+		<div class="product-card__summary">
+			<h3 class="product-card__name">
+				<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $product_name ); ?></a>
+			</h3>
 
-		<h3 class="product-card__name">
-			<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $product->get_name() ); ?></a>
-		</h3>
+			<?php if ( $price_html ) : ?>
+				<div class="product-card__price"><?php echo wp_kses_post( $price_html ); ?></div>
+			<?php endif; ?>
+		</div>
 
-		<?php if ( $avg_rating > 0 ) : ?>
-			<div class="product-card__rating">
-				<div class="product-card__stars">
-					<?php for ( $i = 1; $i <= 5; $i++ ) : ?>
-						<?php $filled = $i <= round( $avg_rating ); ?>
-						<svg viewBox="0 0 12 12" fill="<?php echo $filled ? 'currentColor' : 'none'; ?>" stroke="currentColor" stroke-width="1" aria-hidden="true">
-							<path d="M6 1l1.35 2.73L10.5 4.3l-2.25 2.2.53 3.1L6 8.1l-2.78 1.5.53-3.1L1.5 4.3l3.15-.57L6 1z"/>
-						</svg>
-					<?php endfor; ?>
-				</div>
-				<?php if ( $rating_cnt ) : ?>
-					<span class="product-card__rating-count">
-						<?php
-						printf(
-							/* translators: %d number of reviews */
-							esc_html( _n( '%d review', '%d reviews', $rating_cnt, 'enhanced' ) ),
-							$rating_cnt
-						);
-						?>
-					</span>
+		<?php if ( ! empty( $card_colors ) || ! empty( $card_sizes ) ) : ?>
+			<div class="product-card__options">
+				<?php if ( ! empty( $card_colors ) ) : ?>
+					<div class="product-card__swatches" aria-label="<?php esc_attr_e( 'Available colors', 'enhanced' ); ?>">
+						<?php foreach ( $card_colors as $color ) : ?>
+							<span
+								class="product-card__swatch<?php echo enhanced_is_light_hex_color( $color['color'] ) ? ' product-card__swatch--light' : ''; ?>"
+								style="--card-swatch: <?php echo esc_attr( $color['color'] ); ?>;"
+								title="<?php echo esc_attr( $color['label'] ); ?>"
+							></span>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $card_sizes ) ) : ?>
+					<div class="product-card__sizes" aria-label="<?php esc_attr_e( 'Available sizes', 'enhanced' ); ?>">
+						<?php foreach ( $card_sizes as $size ) : ?>
+							<span class="product-card__size"><?php echo esc_html( $size ); ?></span>
+						<?php endforeach; ?>
+					</div>
 				<?php endif; ?>
 			</div>
 		<?php endif; ?>
 
 		<div class="product-card__footer">
-			<div class="product-card__price-wrap">
-				<?php if ( $price_html ) : ?>
-					<span class="product-card__price"><?php echo wp_kses_post( $price_html ); ?></span>
-				<?php endif; ?>
-			</div>
+			<?php if ( $rating_display ) : ?>
+				<span class="product-card__rating" aria-label="<?php echo esc_attr( sprintf( __( 'Rated %s out of 5', 'enhanced' ), $rating_display ) ); ?>">
+					<span aria-hidden="true">&#9734;</span>
+					<?php echo esc_html( $rating_display ); ?>
+				</span>
+			<?php elseif ( $primary_category ) : ?>
+				<span class="product-card__category"><?php echo esc_html( $primary_category ); ?></span>
+			<?php endif; ?>
 
-			<span class="product-card__stock product-card__stock--<?php echo esc_attr( $stock_badge['class'] ); ?>">
-				<?php echo esc_html( $stock_badge['label'] ); ?>
-			</span>
+			<a
+				href="<?php echo esc_url( $product->add_to_cart_url() ); ?>"
+				data-quantity="1"
+				data-product_id="<?php echo esc_attr( $product_id ); ?>"
+				data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>"
+				class="<?php echo esc_attr( implode( ' ', $add_to_cart_classes ) ); ?>"
+				aria-label="<?php echo esc_attr( $product->add_to_cart_description() ); ?>"
+				rel="nofollow"
+			>
+				<?php esc_html_e( 'BUY +', 'enhanced' ); ?>
+			</a>
 		</div>
 	</div>
-</div>
+</article>

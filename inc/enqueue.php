@@ -27,26 +27,11 @@ function enhanced_enqueue() {
 	);
 
 	/* ── Swiper (carousel library) ───────────────────────────── */
-	wp_enqueue_style(
-		'swiper',
-		'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css',
-		array(),
-		'11'
-	);
-
-	wp_enqueue_script(
-		'swiper',
-		'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js',
-		array(),
-		'11',
-		true
-	);
-
 	/* ── Main theme styles ───────────────────────────────────── */
 	wp_enqueue_style(
 		'enhanced-main',
 		ENHANCED_URI . 'assets/css/main.css',
-		array( 'enhanced-fonts', 'swiper' ),
+		array( 'enhanced-fonts' ),
 		ENHANCED_VERSION
 	);
 
@@ -63,9 +48,16 @@ function enhanced_enqueue() {
 	/* ── Front page styles ───────────────────────────────────── */
 	if ( is_front_page() ) {
 		wp_enqueue_style(
+			'enhanced-front-page-fonts',
+			'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap',
+			array(),
+			null
+		);
+
+		wp_enqueue_style(
 			'enhanced-front-page',
 			ENHANCED_URI . 'assets/css/front-page.css',
-			array( 'enhanced-main' ),
+			array( 'enhanced-main', 'enhanced-front-page-fonts' ),
 			ENHANCED_VERSION
 		);
 	}
@@ -92,7 +84,7 @@ function enhanced_enqueue() {
 		wp_enqueue_script(
 			'enhanced-front-page',
 			ENHANCED_URI . 'assets/js/front-page.js',
-			array( 'swiper' ),
+			array(),
 			ENHANCED_VERSION,
 			true
 		);
@@ -110,3 +102,25 @@ function enhanced_enqueue() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'enhanced_enqueue' );
+
+/**
+ * Add preconnect hints for remote font providers used by the theme.
+ *
+ * @param array  $urls          Existing resource hint URLs.
+ * @param string $relation_type Hint relation type.
+ * @return array
+ */
+function enhanced_resource_hints( $urls, $relation_type ) {
+	if ( 'preconnect' !== $relation_type ) {
+		return $urls;
+	}
+
+	$urls[] = 'https://fonts.googleapis.com';
+	$urls[] = array(
+		'href'        => 'https://fonts.gstatic.com',
+		'crossorigin' => 'anonymous',
+	);
+
+	return $urls;
+}
+add_filter( 'wp_resource_hints', 'enhanced_resource_hints', 10, 2 );

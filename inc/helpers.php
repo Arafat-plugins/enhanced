@@ -360,20 +360,165 @@ function enhanced_get_product_primary_category_name( $product_id = 0 ) {
 	return $terms[0]->name;
 }
 
-function enhanced_get_product_secondary_image_url( $product, $size = 'enhanced-card' ) {
+function enhanced_get_product_card_media( $product, $size = 'enhanced-card' ) {
+	$placeholder = enhanced_is_woo() && function_exists( 'wc_placeholder_img_src' )
+		? wc_placeholder_img_src( $size )
+		: '';
+
 	if ( ! enhanced_is_woo() || ! $product instanceof WC_Product ) {
+		return array(
+			'primary_url'   => $placeholder,
+			'secondary_url' => '',
+			'alt'           => '',
+		);
+	}
+
+	$featured_image_id = (int) $product->get_image_id();
+	$gallery_ids       = array_map( 'intval', $product->get_gallery_image_ids() );
+	$primary_image_id  = $featured_image_id;
+
+	if ( ! $primary_image_id && ! empty( $gallery_ids[0] ) ) {
+		$primary_image_id = (int) $gallery_ids[0];
+	}
+
+	if ( ! $primary_image_id && $product->is_type( 'variable' ) ) {
+		foreach ( $product->get_children() as $variation_id ) {
+			$variation = wc_get_product( $variation_id );
+
+			if ( ! $variation instanceof WC_Product_Variation ) {
+				continue;
+			}
+
+			$primary_image_id = (int) $variation->get_image_id();
+
+			if ( $primary_image_id ) {
+				break;
+			}
+		}
+	}
+
+	$secondary_image_id = 0;
+
+	if ( $featured_image_id && ! empty( $gallery_ids[0] ) ) {
+		$secondary_image_id = (int) $gallery_ids[0];
+	} elseif ( ! $featured_image_id && ! empty( $gallery_ids[1] ) ) {
+		$secondary_image_id = (int) $gallery_ids[1];
+	}
+
+	$primary_url = $primary_image_id ? wp_get_attachment_image_url( $primary_image_id, $size ) : '';
+
+	if ( ! $primary_url ) {
+		$primary_url = $placeholder;
+	}
+
+	$secondary_url = $secondary_image_id ? wp_get_attachment_image_url( $secondary_image_id, $size ) : '';
+	$alt           = $primary_image_id ? get_post_meta( $primary_image_id, '_wp_attachment_image_alt', true ) : '';
+
+	return array(
+		'primary_url'   => $primary_url,
+		'secondary_url' => $secondary_url ? $secondary_url : '',
+		'alt'           => $alt ? $alt : $product->get_name(),
+	);
+}
+
+function enhanced_get_product_sale_badge( $product ) {
+	if ( ! enhanced_is_woo() || ! $product instanceof WC_Product || ! $product->is_on_sale() ) {
 		return '';
 	}
 
-	$gallery_ids = $product->get_gallery_image_ids();
-
-	if ( empty( $gallery_ids ) ) {
+	if ( ! $product->get_regular_price() || ! $product->get_sale_price() ) {
 		return '';
 	}
 
-	$secondary_image = wp_get_attachment_image_url( (int) $gallery_ids[0], $size );
+	$regular = (float) $product->get_regular_price();
+	$sale    = (float) $product->get_sale_price();
 
-	return $secondary_image ? $secondary_image : '';
+	if ( $regular <= 0 || $sale <= 0 || $sale >= $regular ) {
+		return '';
+	}
+
+	$percentage = (int) round( ( ( $regular - $sale ) / $regular ) * 100 );
+
+	if ( $percentage <= 0 ) {
+		return '';
+	}
+
+	return sprintf(
+		/* translators: %d percentage off */
+		__( '-%d%%', 'enhanced' ),
+		$percentage
+	);
+}
+
+function enhanced_get_product_card_attribute_options( $product ) {
+	if ( ! enhanced_is_woo() || ! $product instanceof WC_Product ) {
+		return array(
+			'colors' => array(),
+			'sizes'  => array(),
+		);
+	}
+
+	$options = array(
+		'colors' => array(),
+		'sizes'  => array(),
+	);
+
+	foreach ( $product->get_attributes() as $attribute ) {
+		if ( ! $attribute instanceof WC_Product_Attribute || ! $attribute->get_visible() ) {
+			continue;
+		}
+
+		$attribute_name  = $attribute->get_name();
+		$attribute_label = wc_attribute_label( $attribute_name );
+		$attribute_type  = enhanced_get_attribute_picker_type( $attribute_name, $attribute_label );
+
+		if ( ! in_array( $attribute_type, array( 'color', 'size' ), true ) ) {
+			continue;
+		}
+
+		$raw_values = array();
+
+		if ( $attribute->is_taxonomy() ) {
+			$terms = wc_get_product_terms(
+				$product->get_id(),
+				$attribute_name,
+				array( 'fields' => 'all' )
+			);
+
+			if ( is_wp_error( $terms ) ) {
+				$terms = array();
+			}
+
+			foreach ( $terms as $term ) {
+				$raw_values[] = $term->name;
+			}
+		} else {
+			foreach ( $attribute->get_options() as $option_value ) {
+				$raw_values[] = $option_value;
+			}
+		}
+
+		$fallback_value = $product->get_attribute( $attribute_name );
+		if ( $fallback_value ) {
+			$raw_values[] = $fallback_value;
+		}
+
+		foreach ( enhanced_split_attribute_option_values( $raw_values ) as $value ) {
+			if ( 'color' === $attribute_type ) {
+				$options['colors'][ strtolower( $value ) ] = array(
+					'label' => $value,
+					'color' => enhanced_get_color_swatch_value( $value ),
+				);
+			} else {
+				$options['sizes'][ strtolower( $value ) ] = $value;
+			}
+		}
+	}
+
+	$options['colors'] = array_values( $options['colors'] );
+	$options['sizes']  = array_values( $options['sizes'] );
+
+	return $options;
 }
 
 function enhanced_get_product_gallery_images( $product ) {
