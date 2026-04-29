@@ -111,19 +111,32 @@
     });
   }
 
-  /* ── Right panel sliders (TR + BR — randomised transitions) ─ */
+  /* ── Right panel sliders (TR + BR) ─────────────────────────── */
   function initRpSliders() {
-    var STYLES  = ['fade', 'slide-right', 'slide-left', 'slide-up', 'slide-down', 'zoom-in', 'zoom-out', 'rotate'];
-    var ANIM_MS = 860;
+    var STYLES  = ['fade', 'slide-right', 'slide-left', 'slide-up', 'slide-down', 'zoom-in', 'zoom-out'];
+    var EASINGS = {
+      smooth: 'cubic-bezier(.22, .61, .36, 1)',
+      ease: 'ease',
+      'ease-in': 'ease-in',
+      'ease-out': 'ease-out',
+      'ease-in-out': 'ease-in-out',
+      linear: 'linear'
+    };
 
     document.querySelectorAll('[data-lx-rp-slider]').forEach(function (slider) {
-      var slides    = slider.querySelectorAll('.lx-rp-slide');
+      var slides    = Array.prototype.slice.call(slider.querySelectorAll('.lx-rp-slide'));
       var total     = slides.length;
       if (total <= 1) return;
 
-      var current   = 0;
-      var lastStyle = '';
-      var interval  = Math.max(2000, parseInt(slider.getAttribute('data-interval'), 10) || 4000);
+      var current         = 0;
+      var lastStyle       = '';
+      var interval        = Math.max(2000, parseInt(slider.getAttribute('data-interval'), 10) || 4000);
+      var configuredStyle = slider.getAttribute('data-animation') || 'zoom-out';
+      var animationMs     = Math.min(3000, Math.max(200, parseInt(slider.getAttribute('data-animation-duration'), 10) || 820));
+      var easingKey       = slider.getAttribute('data-animation-easing') || 'smooth';
+
+      slider.style.setProperty('--lx-rp-anim-duration', animationMs + 'ms');
+      slider.style.setProperty('--lx-rp-anim-easing', EASINGS[easingKey] || EASINGS.smooth);
 
       function clearAnim(slide) {
         STYLES.forEach(function (s) {
@@ -131,17 +144,29 @@
         });
       }
 
-      function pickStyle() {
+      function pickRandomStyle() {
         var pool = STYLES.filter(function (s) { return s !== lastStyle; });
-        return pool[Math.floor(Math.random() * pool.length)];
+        return pool[Math.floor(Math.random() * pool.length)] || STYLES[0];
+      }
+
+      function resolveStyle() {
+        if (configuredStyle === 'random') {
+          lastStyle = pickRandomStyle();
+          return lastStyle;
+        }
+
+        if (STYLES.indexOf(configuredStyle) !== -1) {
+          return configuredStyle;
+        }
+
+        return 'zoom-out';
       }
 
       setInterval(function () {
         var prev  = current;
         current   = (current + 1) % total;
 
-        var style = pickStyle();
-        lastStyle = style;
+        var style = resolveStyle();
 
         clearAnim(slides[prev]);
         clearAnim(slides[current]);
@@ -156,7 +181,7 @@
         setTimeout(function () {
           slides[prev].classList.remove('is-leaving');
           clearAnim(slides[prev]);
-        }, ANIM_MS);
+        }, animationMs + 40);
       }, interval);
     });
   }

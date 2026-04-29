@@ -51,6 +51,44 @@ function enhanced_get_option( $key, $default = '' ) {
 	return get_theme_mod( 'enhanced_' . $key, $default );
 }
 
+function enhanced_get_rp_animation_choices() {
+	return array(
+		'zoom-out'   => __( 'Zoom out', 'enhanced' ),
+		'fade'       => __( 'Fade in / out', 'enhanced' ),
+		'slide-right' => __( 'Left to right', 'enhanced' ),
+		'slide-left' => __( 'Right to left', 'enhanced' ),
+		'slide-up'   => __( 'Bottom to top', 'enhanced' ),
+		'slide-down' => __( 'Top to bottom', 'enhanced' ),
+		'zoom-in'    => __( 'Zoom in', 'enhanced' ),
+		'random'     => __( 'Random', 'enhanced' ),
+	);
+}
+
+function enhanced_sanitize_rp_animation( $value ) {
+	$value   = sanitize_key( (string) $value );
+	$choices = enhanced_get_rp_animation_choices();
+
+	return isset( $choices[ $value ] ) ? $value : 'zoom-out';
+}
+
+function enhanced_get_rp_animation_easing_choices() {
+	return array(
+		'smooth'      => __( 'Smooth', 'enhanced' ),
+		'ease'        => __( 'Ease', 'enhanced' ),
+		'ease-in'     => __( 'Ease in', 'enhanced' ),
+		'ease-out'    => __( 'Ease out', 'enhanced' ),
+		'ease-in-out' => __( 'Ease in out', 'enhanced' ),
+		'linear'      => __( 'Linear', 'enhanced' ),
+	);
+}
+
+function enhanced_sanitize_rp_animation_easing( $value ) {
+	$value   = sanitize_key( (string) $value );
+	$choices = enhanced_get_rp_animation_easing_choices();
+
+	return isset( $choices[ $value ] ) ? $value : 'smooth';
+}
+
 function enhanced_get_image_option_url( $key, $size = 'full', $default = '' ) {
 	$value = enhanced_get_option( $key, '' );
 

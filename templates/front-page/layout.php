@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 		'front-page/hero',
 		compact(
 			'shop_url', 'hero_eyebrow', 'hero_title', 'hero_description',
-			'hero_primary_label', 'hero_primary_url', 'hero_secondary_label', 'hero_secondary_url',
+			'hero_primary_label', 'hero_primary_url',
 			'hero_media_type', 'hero_image_url', 'hero_video_upload_url',
 			'hero_external_video_url', 'hero_external_embed', 'hero_external_is_video',
 			'reference_visual_url', 'hero_product', 'popular_subcats'

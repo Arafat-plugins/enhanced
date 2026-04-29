@@ -15,8 +15,6 @@ $hero_title              = enhanced_get_option( 'hero_title', __( 'Manage', 'enh
 $hero_description        = enhanced_get_option( 'hero_description', __( 'This is the first time', 'enhanced' ) );
 $hero_primary_label      = enhanced_get_option( 'hero_primary_label', __( 'Explore Product', 'enhanced' ) );
 $hero_primary_url        = enhanced_get_option( 'hero_primary_url', $shop_url );
-$hero_secondary_label    = enhanced_get_option( 'hero_secondary_label', __( 'Explore the Brand', 'enhanced' ) );
-$hero_secondary_url      = enhanced_get_option( 'hero_secondary_url', home_url( '/about/' ) );
 $hero_media_type         = enhanced_get_option( 'hero_media_type', 'image' );
 $hero_image_url          = enhanced_get_image_option_url( 'hero_image', 'enhanced-hero' );
 $hero_video_upload_id    = (int) enhanced_get_option( 'hero_video_upload', 0 );
@@ -147,7 +145,7 @@ enhanced_get_template(
 	'front-page/layout',
 	compact(
 		'shop_url', 'hero_eyebrow', 'hero_title', 'hero_description',
-		'hero_primary_label', 'hero_primary_url', 'hero_secondary_label', 'hero_secondary_url',
+		'hero_primary_label', 'hero_primary_url',
 		'hero_media_type', 'hero_image_url', 'hero_video_upload_url',
 		'hero_external_video_url', 'hero_external_embed', 'hero_external_is_video',
 		'reference_visual_url', 'categories', 'featured', 'sale_items',
