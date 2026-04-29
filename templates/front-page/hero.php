@@ -49,8 +49,14 @@ $hero_overlay_opacity  = min( 100, max( 0, (int) enhanced_get_option( 'hero_over
 $hero_overlay_alpha    = rtrim( rtrim( number_format( $hero_overlay_opacity / 100, 2, '.', '' ), '0' ), '.' );
 
 // Build right-panel slides from Enhanced Settings › Right Panel Slides.
-$rp_tr_interval = max( 2000, (int) enhanced_get_option( 'rp_tr_interval', 4000 ) );
-$rp_br_interval = max( 2000, (int) enhanced_get_option( 'rp_br_interval', 5000 ) );
+$rp_tr_interval  = max( 2000, (int) enhanced_get_option( 'rp_tr_interval', 4000 ) );
+$rp_br_interval  = max( 2000, (int) enhanced_get_option( 'rp_br_interval', 5000 ) );
+$rp_tr_animation = enhanced_sanitize_rp_animation( enhanced_get_option( 'rp_tr_animation', 'zoom-out' ) );
+$rp_br_animation = enhanced_sanitize_rp_animation( enhanced_get_option( 'rp_br_animation', 'zoom-out' ) );
+$rp_tr_duration  = min( 3000, max( 200, (int) enhanced_get_option( 'rp_tr_animation_duration', 820 ) ) );
+$rp_br_duration  = min( 3000, max( 200, (int) enhanced_get_option( 'rp_br_animation_duration', 820 ) ) );
+$rp_tr_easing    = enhanced_sanitize_rp_animation_easing( enhanced_get_option( 'rp_tr_animation_easing', 'smooth' ) );
+$rp_br_easing    = enhanced_sanitize_rp_animation_easing( enhanced_get_option( 'rp_br_animation_easing', 'smooth' ) );
 
 $rp_tr_slides = enhanced_build_rp_slides( 'tr' );
 $rp_br_slides = enhanced_build_rp_slides( 'br' );
@@ -164,7 +170,10 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 
 	<?php /* Top-right slider */ ?>
 	<div class="lx-hero-tr lx-rp-slider<?php echo empty( $rp_tr_slides ) ? ' lx-rp-slider--empty' : ''; ?>" data-lx-rp-slider
-	     data-interval="<?php echo esc_attr( $rp_tr_interval ); ?>">
+	     data-interval="<?php echo esc_attr( $rp_tr_interval ); ?>"
+	     data-animation="<?php echo esc_attr( $rp_tr_animation ); ?>"
+	     data-animation-duration="<?php echo esc_attr( $rp_tr_duration ); ?>"
+	     data-animation-easing="<?php echo esc_attr( $rp_tr_easing ); ?>">
 		<?php if ( ! empty( $rp_tr_slides ) ) : ?>
 			<?php foreach ( $rp_tr_slides as $rp_i => $rp_slide ) : ?>
 			<div class="lx-rp-slide<?php echo 0 === $rp_i ? ' is-active' : ''; ?>"
@@ -190,7 +199,10 @@ $rp_br_slides = enhanced_build_rp_slides( 'br' );
 
 	<?php /* Bottom-right slider */ ?>
 	<div class="lx-hero-br lx-rp-slider<?php echo empty( $rp_br_slides ) ? ' lx-rp-slider--empty' : ''; ?>" data-lx-rp-slider
-	     data-interval="<?php echo esc_attr( $rp_br_interval ); ?>">
+	     data-interval="<?php echo esc_attr( $rp_br_interval ); ?>"
+	     data-animation="<?php echo esc_attr( $rp_br_animation ); ?>"
+	     data-animation-duration="<?php echo esc_attr( $rp_br_duration ); ?>"
+	     data-animation-easing="<?php echo esc_attr( $rp_br_easing ); ?>">
 		<?php if ( ! empty( $rp_br_slides ) ) : ?>
 			<?php foreach ( $rp_br_slides as $rp_i => $rp_slide ) : ?>
 			<div class="lx-rp-slide<?php echo 0 === $rp_i ? ' is-active' : ''; ?>"

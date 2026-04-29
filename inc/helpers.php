@@ -51,6 +51,44 @@ function enhanced_get_option( $key, $default = '' ) {
 	return get_theme_mod( 'enhanced_' . $key, $default );
 }
 
+function enhanced_get_rp_animation_choices() {
+	return array(
+		'zoom-out'   => __( 'Zoom out', 'enhanced' ),
+		'fade'       => __( 'Fade in / out', 'enhanced' ),
+		'slide-right' => __( 'Left to right', 'enhanced' ),
+		'slide-left' => __( 'Right to left', 'enhanced' ),
+		'slide-up'   => __( 'Bottom to top', 'enhanced' ),
+		'slide-down' => __( 'Top to bottom', 'enhanced' ),
+		'zoom-in'    => __( 'Zoom in', 'enhanced' ),
+		'random'     => __( 'Random', 'enhanced' ),
+	);
+}
+
+function enhanced_sanitize_rp_animation( $value ) {
+	$value   = sanitize_key( (string) $value );
+	$choices = enhanced_get_rp_animation_choices();
+
+	return isset( $choices[ $value ] ) ? $value : 'zoom-out';
+}
+
+function enhanced_get_rp_animation_easing_choices() {
+	return array(
+		'smooth'      => __( 'Smooth', 'enhanced' ),
+		'ease'        => __( 'Ease', 'enhanced' ),
+		'ease-in'     => __( 'Ease in', 'enhanced' ),
+		'ease-out'    => __( 'Ease out', 'enhanced' ),
+		'ease-in-out' => __( 'Ease in out', 'enhanced' ),
+		'linear'      => __( 'Linear', 'enhanced' ),
+	);
+}
+
+function enhanced_sanitize_rp_animation_easing( $value ) {
+	$value   = sanitize_key( (string) $value );
+	$choices = enhanced_get_rp_animation_easing_choices();
+
+	return isset( $choices[ $value ] ) ? $value : 'smooth';
+}
+
 function enhanced_get_image_option_url( $key, $size = 'full', $default = '' ) {
 	$value = enhanced_get_option( $key, '' );
 
@@ -360,17 +398,9 @@ function enhanced_get_product_primary_category_name( $product_id = 0 ) {
 	return $terms[0]->name;
 }
 
-function enhanced_get_product_card_media( $product, $size = 'enhanced-card' ) {
-	$placeholder = enhanced_is_woo() && function_exists( 'wc_placeholder_img_src' )
-		? wc_placeholder_img_src( $size )
-		: '';
-
+function enhanced_get_product_primary_image_id( $product ) {
 	if ( ! enhanced_is_woo() || ! $product instanceof WC_Product ) {
-		return array(
-			'primary_url'   => $placeholder,
-			'secondary_url' => '',
-			'alt'           => '',
-		);
+		return 0;
 	}
 
 	$featured_image_id = (int) $product->get_image_id();
@@ -397,6 +427,26 @@ function enhanced_get_product_card_media( $product, $size = 'enhanced-card' ) {
 		}
 	}
 
+	return (int) $primary_image_id;
+}
+
+function enhanced_get_product_card_media( $product, $size = 'enhanced-card' ) {
+	$placeholder = enhanced_is_woo() && function_exists( 'wc_placeholder_img_src' )
+		? wc_placeholder_img_src( $size )
+		: '';
+
+	if ( ! enhanced_is_woo() || ! $product instanceof WC_Product ) {
+		return array(
+			'primary_url'   => $placeholder,
+			'secondary_url' => '',
+			'alt'           => '',
+		);
+	}
+
+	$featured_image_id = (int) $product->get_image_id();
+	$gallery_ids       = array_map( 'intval', $product->get_gallery_image_ids() );
+	$primary_image_id  = enhanced_get_product_primary_image_id( $product );
+
 	$secondary_image_id = 0;
 
 	if ( $featured_image_id && ! empty( $gallery_ids[0] ) ) {
@@ -418,6 +468,66 @@ function enhanced_get_product_card_media( $product, $size = 'enhanced-card' ) {
 		'primary_url'   => $primary_url,
 		'secondary_url' => $secondary_url ? $secondary_url : '',
 		'alt'           => $alt ? $alt : $product->get_name(),
+	);
+}
+
+function enhanced_get_term_card_media( $term, $size = 'enhanced-card' ) {
+	$placeholder = enhanced_is_woo() && function_exists( 'wc_placeholder_img_src' )
+		? wc_placeholder_img_src( $size )
+		: '';
+
+	if ( ! $term instanceof WP_Term ) {
+		return array(
+			'image_id'  => 0,
+			'image_url' => $placeholder,
+			'alt'       => '',
+		);
+	}
+
+	$image_id = (int) get_term_meta( $term->term_id, 'thumbnail_id', true );
+	$image_url = $image_id ? wp_get_attachment_image_url( $image_id, $size ) : '';
+
+	if ( $image_id && $image_url ) {
+		return array(
+			'image_id'  => $image_id,
+			'image_url' => $image_url,
+			'alt'       => $term->name,
+		);
+	}
+
+	if ( enhanced_is_woo() ) {
+		$product_ids = get_posts( array(
+			'post_type'      => 'product',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'tax_query'      => array(
+				array(
+					'taxonomy' => 'product_cat',
+					'field'    => 'term_id',
+					'terms'    => $term->term_id,
+				),
+			),
+		) );
+
+		if ( ! empty( $product_ids[0] ) ) {
+			$product = wc_get_product( (int) $product_ids[0] );
+			$image_id = enhanced_get_product_primary_image_id( $product );
+
+			if ( $image_id ) {
+				return array(
+					'image_id'  => $image_id,
+					'image_url' => '',
+					'alt'       => $term->name,
+				);
+			}
+		}
+	}
+
+	return array(
+		'image_id'  => 0,
+		'image_url' => $placeholder,
+		'alt'       => $term->name,
 	);
 }
 

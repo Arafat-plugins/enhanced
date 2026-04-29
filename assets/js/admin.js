@@ -59,7 +59,6 @@ jQuery( function ( $ ) {
 	/* ── "+ Upload Images" — opens multi-select media picker ─── */
 	$( document ).on( 'click', '.en-rp-upload-btn', function ( e ) {
 		e.preventDefault();
-		var panel   = $( this ).data( 'panel' );
 		var $panel  = $( this ).closest( '.en-rp-panel' );
 		var $thumbs = $panel.find( '.en-rp-thumbs' );
 
@@ -71,7 +70,7 @@ jQuery( function ( $ ) {
 		} );
 
 		frame.on( 'select', function () {
-			var atts = frame.state().get( 'selection' ).toJSON();
+			var atts = frame.state().get( 'selection' ).toJSON().slice( 0, 3 );
 			$thumbs.empty();
 			atts.forEach( function ( att ) {
 				$thumbs.append( makeTile( att.id, att.url ) );

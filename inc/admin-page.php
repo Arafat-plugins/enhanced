@@ -76,8 +76,6 @@ function enhanced_admin_save() {
 		'hero_title_line2'     => 'sanitize_text_field',
 		'hero_primary_label'   => 'sanitize_text_field',
 		'hero_primary_url'     => 'esc_url_raw',
-		'hero_secondary_label' => 'sanitize_text_field',
-		'hero_secondary_url'   => 'esc_url_raw',
 		'hero_accent_color'    => 'sanitize_hex_color',
 		'hero_media_type'      => 'sanitize_key',
 		'hero_image'           => 'absint',
@@ -86,6 +84,12 @@ function enhanced_admin_save() {
 		// Right panel slides
 		'rp_tr_interval' => 'absint',
 		'rp_br_interval' => 'absint',
+		'rp_tr_animation' => 'enhanced_sanitize_rp_animation',
+		'rp_br_animation' => 'enhanced_sanitize_rp_animation',
+		'rp_tr_animation_duration' => 'absint',
+		'rp_br_animation_duration' => 'absint',
+		'rp_tr_animation_easing' => 'enhanced_sanitize_rp_animation_easing',
+		'rp_br_animation_easing' => 'enhanced_sanitize_rp_animation_easing',
 		'rp_tr_title'    => 'sanitize_text_field',
 		'rp_br_title'    => 'sanitize_text_field',
 		'rp_tr_opacity'  => 'absint',
@@ -135,7 +139,11 @@ function enhanced_admin_save() {
 		if ( ! array_key_exists( "enhanced_rp_{$panel}_images", $_POST ) ) {
 			continue;
 		}
-		$ids = array_filter( array_map( 'absint', explode( ',', $_POST[ "enhanced_rp_{$panel}_images" ] ) ) );
+		$ids = array_slice(
+			array_filter( array_map( 'absint', explode( ',', $_POST[ "enhanced_rp_{$panel}_images" ] ) ) ),
+			0,
+			3
+		);
 		set_theme_mod( "enhanced_rp_{$panel}_images", implode( ',', $ids ) );
 	}
 
@@ -378,16 +386,33 @@ function enhanced_admin_tab_hero() {
 
 function enhanced_admin_tab_slides() {
 	$panels = array(
-		'tr' => array( 'label' => __( 'TOP-RIGHT PANEL', 'enhanced' ),    'default_interval' => 4000 ),
-		'br' => array( 'label' => __( 'BOTTOM-RIGHT PANEL', 'enhanced' ), 'default_interval' => 5000 ),
+		'tr' => array(
+			'label'              => __( 'TOP-RIGHT PANEL', 'enhanced' ),
+			'default_interval'   => 4000,
+			'default_animation'  => 'zoom-out',
+			'default_duration'   => 820,
+			'default_easing'     => 'smooth',
+		),
+		'br' => array(
+			'label'              => __( 'BOTTOM-RIGHT PANEL', 'enhanced' ),
+			'default_interval'   => 5000,
+			'default_animation'  => 'zoom-out',
+			'default_duration'   => 820,
+			'default_easing'     => 'smooth',
+		),
 	);
+	$animation_choices        = enhanced_get_rp_animation_choices();
+	$animation_easing_choices = enhanced_get_rp_animation_easing_choices();
 
 	foreach ( $panels as $panel_key => $cfg ) :
-		$interval  = (int) _en_mod( "rp_{$panel_key}_interval", $cfg['default_interval'] ) ?: $cfg['default_interval'];
-		$title     = esc_attr( _en_mod( "rp_{$panel_key}_title", '' ) );
-		$opacity   = (int) _en_mod( "rp_{$panel_key}_opacity", 25 );
-		$ids_raw   = _en_mod( "rp_{$panel_key}_images", '' );
-		$image_ids = array_filter( array_map( 'intval', explode( ',', $ids_raw ) ) );
+		$interval   = (int) _en_mod( "rp_{$panel_key}_interval", $cfg['default_interval'] ) ?: $cfg['default_interval'];
+		$animation  = enhanced_sanitize_rp_animation( _en_mod( "rp_{$panel_key}_animation", $cfg['default_animation'] ) );
+		$duration   = min( 3000, max( 200, (int) _en_mod( "rp_{$panel_key}_animation_duration", $cfg['default_duration'] ) ) );
+		$easing     = enhanced_sanitize_rp_animation_easing( _en_mod( "rp_{$panel_key}_animation_easing", $cfg['default_easing'] ) );
+		$title      = esc_attr( _en_mod( "rp_{$panel_key}_title", '' ) );
+		$opacity    = min( 100, max( 0, (int) _en_mod( "rp_{$panel_key}_opacity", 25 ) ) );
+		$ids_raw    = _en_mod( "rp_{$panel_key}_images", '' );
+		$image_ids  = array_slice( array_filter( array_map( 'intval', explode( ',', $ids_raw ) ) ), 0, 3 );
 		?>
 		<div class="en-rp-panel">
 
@@ -404,6 +429,8 @@ function enhanced_admin_tab_slides() {
 						<input type="number"
 						       name="enhanced_rp_<?php echo esc_attr( $panel_key ); ?>_interval"
 						       value="<?php echo esc_attr( $interval ); ?>"
+						       min="2000"
+						       step="100"
 						       class="en-rp-interval">
 						ms
 					</label>
@@ -438,6 +465,46 @@ function enhanced_admin_tab_slides() {
 
 			<?php /* Shared controls — apply to all slides in this panel */ ?>
 			<div class="en-rp-shared">
+				<div class="en-rp-shared__field">
+					<label for="en_rp_<?php echo esc_attr( $panel_key ); ?>_animation">
+						<?php esc_html_e( 'Animation type', 'enhanced' ); ?>
+					</label>
+					<select id="en_rp_<?php echo esc_attr( $panel_key ); ?>_animation"
+					        name="enhanced_rp_<?php echo esc_attr( $panel_key ); ?>_animation">
+						<?php foreach ( $animation_choices as $animation_value => $animation_label ) : ?>
+							<option value="<?php echo esc_attr( $animation_value ); ?>"<?php selected( $animation, $animation_value ); ?>>
+								<?php echo esc_html( $animation_label ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<p class="en-desc"><?php esc_html_e( 'Applies to slide changes in this panel only.', 'enhanced' ); ?></p>
+				</div>
+				<div class="en-rp-shared__field">
+					<label for="en_rp_<?php echo esc_attr( $panel_key ); ?>_animation_duration">
+						<?php esc_html_e( 'Animation speed (ms)', 'enhanced' ); ?>
+					</label>
+					<input type="number"
+					       id="en_rp_<?php echo esc_attr( $panel_key ); ?>_animation_duration"
+					       name="enhanced_rp_<?php echo esc_attr( $panel_key ); ?>_animation_duration"
+					       value="<?php echo esc_attr( $duration ); ?>"
+					       min="200"
+					       max="3000"
+					       step="10">
+					<p class="en-desc"><?php esc_html_e( 'Controls how fast each slide transition runs.', 'enhanced' ); ?></p>
+				</div>
+				<div class="en-rp-shared__field">
+					<label for="en_rp_<?php echo esc_attr( $panel_key ); ?>_animation_easing">
+						<?php esc_html_e( 'Animation easing', 'enhanced' ); ?>
+					</label>
+					<select id="en_rp_<?php echo esc_attr( $panel_key ); ?>_animation_easing"
+					        name="enhanced_rp_<?php echo esc_attr( $panel_key ); ?>_animation_easing">
+						<?php foreach ( $animation_easing_choices as $easing_value => $easing_label ) : ?>
+							<option value="<?php echo esc_attr( $easing_value ); ?>"<?php selected( $easing, $easing_value ); ?>>
+								<?php echo esc_html( $easing_label ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</div>
 				<div class="en-rp-shared__field">
 					<label for="en_rp_<?php echo esc_attr( $panel_key ); ?>_title">
 						<?php esc_html_e( 'Overlay text', 'enhanced' ); ?>
