@@ -36,27 +36,57 @@ if ( enhanced_is_woo() ) {
 		'exclude'    => array( (int) get_option( 'default_product_cat', 0 ) ),
 	) );
 
-	$featured = wc_get_products( array(
-		'status'   => 'publish',
-		'limit'    => 8,
-		'featured' => true,
-	) );
-
-	if ( empty( $featured ) ) {
-		$featured = wc_get_products( array(
-			'status'  => 'publish',
-			'limit'   => 8,
-			'orderby' => 'date',
-			'order'   => 'DESC',
-		) );
-	}
-
 	$arrivals = wc_get_products( array(
 		'status'  => 'publish',
 		'limit'   => 10,
 		'orderby' => 'date',
 		'order'   => 'DESC',
 	) );
+
+	$arrival_ids = array_values(
+		array_filter(
+			array_map(
+				static function ( $product ) {
+					return $product instanceof WC_Product ? (int) $product->get_id() : 0;
+				},
+				$arrivals
+			)
+		)
+	);
+
+	$featured = wc_get_products( array(
+		'status'   => 'publish',
+		'limit'    => 12,
+		'featured' => true,
+		'exclude'  => $arrival_ids,
+	) );
+
+	if ( count( $featured ) < 8 ) {
+		$featured_ids = array_values(
+			array_filter(
+				array_map(
+					static function ( $product ) {
+						return $product instanceof WC_Product ? (int) $product->get_id() : 0;
+					},
+					$featured
+				)
+			)
+		);
+
+		$featured_fill = wc_get_products( array(
+			'status'  => 'publish',
+			'limit'   => 8 - count( $featured ),
+			'orderby' => 'date',
+			'order'   => 'DESC',
+			'exclude' => array_merge( $arrival_ids, $featured_ids ),
+		) );
+
+		if ( ! empty( $featured_fill ) ) {
+			$featured = array_merge( $featured, $featured_fill );
+		}
+	}
+
+	$featured = array_slice( $featured, 0, 8 );
 
 	$sale_ids = array_slice( wc_get_product_ids_on_sale(), 0, 10 );
 	if ( ! empty( $sale_ids ) ) {

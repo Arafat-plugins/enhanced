@@ -32,7 +32,15 @@ defined( 'ABSPATH' ) || exit;
 		<?php enhanced_get_template( 'front-page/category-rail', compact( 'categories', 'shop_url' ) ); ?>
 	<?php endif; ?>
 
-	<?php /* 4. New arrivals */ ?>
+	<?php /* 4. Sale promos */ ?>
+	<?php if ( ! empty( $sale_items ) || ! empty( $featured ) ) : ?>
+		<?php enhanced_get_template( 'front-page/sale-rail', compact( 'sale_items', 'featured', 'shop_url' ) ); ?>
+	<?php endif; ?>
+
+	<?php /* 5. Dark benefit banner */ ?>
+	<?php enhanced_get_template( 'front-page/sale-banner', compact( 'shop_url' ) ); ?>
+
+	<?php /* 6. New arrivals */ ?>
 	<?php if ( ! empty( $arrivals ) ) : ?>
 		<?php
 		enhanced_get_template(
@@ -52,16 +60,8 @@ defined( 'ABSPATH' ) || exit;
 		?>
 	<?php endif; ?>
 
-	<?php /* 5. Sale promos */ ?>
-	<?php if ( ! empty( $sale_items ) || ! empty( $featured ) ) : ?>
-		<?php enhanced_get_template( 'front-page/sale-rail', compact( 'sale_items', 'featured', 'shop_url' ) ); ?>
-	<?php endif; ?>
-
-	<?php /* 6. Dark benefit banner */ ?>
-	<?php enhanced_get_template( 'front-page/sale-banner', compact( 'shop_url' ) ); ?>
-
 	<?php /* 7. Featured products */ ?>
-	<?php if ( ! empty( $featured ) || ! empty( $arrivals ) ) : ?>
+	<?php if ( ! empty( $featured ) ) : ?>
 		<?php
 		$featured_tabs = array(
 			array(
@@ -85,7 +85,7 @@ defined( 'ABSPATH' ) || exit;
 			'front-page/product-rail',
 			array(
 				'section_classes' => 'lx-product-rail--grid lx-product-rail--featured',
-				'products'        => array_slice( ! empty( $featured ) ? $featured : $arrivals, 0, 8 ),
+				'products'        => array_slice( $featured, 0, 8 ),
 				'shop_url'        => $shop_url,
 				'eyebrow'         => '',
 				'title'           => __( 'Featured Products', 'enhanced' ),
