@@ -96,7 +96,6 @@ function enhanced_admin_save() {
 		'rp_br_opacity'  => 'absint',
 		// Sale Is On
 		'sale_due_label' => 'sanitize_text_field',
-		'category_marquee_speed' => 'absint',
 		// Sale banner
 		'sale_banner_eyebrow' => 'sanitize_text_field',
 		'sale_banner_title'   => 'sanitize_text_field',
@@ -537,35 +536,6 @@ function enhanced_admin_tab_slides() {
 /* ── Tab: Shop & Banners ──────────────────────────────────── */
 
 function enhanced_admin_tab_shop() {
-	en_heading( __( 'Shop By Category', 'enhanced' ) );
-	$category_marquee_duration = min( 120, max( 8, (int) _en_mod( 'category_marquee_speed', 30 ) ) );
-	$category_marquee_ui_speed = (int) round( 100 - ( ( $category_marquee_duration - 8 ) / 112 ) * 99 );
-	$category_marquee_ui_speed = min( 100, max( 1, $category_marquee_ui_speed ) );
-	?>
-	<div class="en-field">
-		<label for="enhanced_category_marquee_speed_slider">
-			<?php esc_html_e( 'Category marquee speed', 'enhanced' ); ?>
-			<output id="enhanced_category_marquee_speed_val" style="font-weight:700;margin-left:6px;">
-				<?php echo esc_html( $category_marquee_ui_speed ); ?>%
-			</output>
-		</label>
-		<input type="hidden"
-		       id="enhanced_category_marquee_speed"
-		       name="enhanced_category_marquee_speed"
-		       value="<?php echo esc_attr( $category_marquee_duration ); ?>">
-		<input type="range"
-		       min="1"
-		       max="100"
-		       step="1"
-		       id="enhanced_category_marquee_speed_slider"
-		       value="<?php echo esc_attr( $category_marquee_ui_speed ); ?>"
-		       style="width:100%;"
-		       oninput="(function(slider){var speed=parseInt(slider.value,10)||1;var duration=Math.round(120-((speed-1)*(112/99)));document.getElementById('enhanced_category_marquee_speed').value=duration;document.getElementById('enhanced_category_marquee_speed_val').textContent=speed + '%';})(this)">
-		<p class="en-desc"><?php esc_html_e( 'Drag left for slower movement and right for faster movement.', 'enhanced' ); ?></p>
-	</div>
-	<?php
-
-	echo '<hr class="en-divider">';
 	en_heading( __( 'Sale Is On', 'enhanced' ) );
 	en_field( 'sale_due_label', __( 'Due-date badge', 'enhanced' ), 'text', 'Due Aug 24', __( 'Shown on promo cards.', 'enhanced' ) );
 

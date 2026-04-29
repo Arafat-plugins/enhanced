@@ -24,23 +24,20 @@ defined( 'ABSPATH' ) || exit;
 	);
 	?>
 
-	<?php /* 2. Trust badges */ ?>
-	<?php enhanced_get_template( 'front-page/trust-badges' ); ?>
-
-	<?php /* 3. Shop by category */ ?>
+	<?php /* 2. Shop by category */ ?>
 	<?php if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) : ?>
 		<?php enhanced_get_template( 'front-page/category-rail', compact( 'categories', 'shop_url' ) ); ?>
 	<?php endif; ?>
 
-	<?php /* 4. Sale promos */ ?>
+	<?php /* 3. Sale promos */ ?>
 	<?php if ( ! empty( $sale_items ) || ! empty( $featured ) ) : ?>
 		<?php enhanced_get_template( 'front-page/sale-rail', compact( 'sale_items', 'featured', 'shop_url' ) ); ?>
 	<?php endif; ?>
 
-	<?php /* 5. Dark benefit banner */ ?>
+	<?php /* 4. Dark benefit banner */ ?>
 	<?php enhanced_get_template( 'front-page/sale-banner', compact( 'shop_url' ) ); ?>
 
-	<?php /* 6. New arrivals */ ?>
+	<?php /* 5. New arrivals */ ?>
 	<?php if ( ! empty( $arrivals ) ) : ?>
 		<?php
 		enhanced_get_template(
@@ -60,7 +57,7 @@ defined( 'ABSPATH' ) || exit;
 		?>
 	<?php endif; ?>
 
-	<?php /* 7. Featured products */ ?>
+	<?php /* 6. Featured products */ ?>
 	<?php if ( ! empty( $featured ) ) : ?>
 		<?php
 		$featured_tabs = array(
@@ -99,12 +96,12 @@ defined( 'ABSPATH' ) || exit;
 		?>
 	<?php endif; ?>
 
-	<?php /* 8. Blog */ ?>
+	<?php /* 7. Blog */ ?>
 	<?php if ( ! empty( $blog_posts ) ) : ?>
 		<?php enhanced_get_template( 'front-page/blog-section', compact( 'blog_posts' ) ); ?>
 	<?php endif; ?>
 
-	<?php /* 9. Newsletter */ ?>
+	<?php /* 8. Newsletter */ ?>
 	<?php enhanced_get_template( 'front-page/newsletter' ); ?>
 
 </main>
