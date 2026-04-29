@@ -42,7 +42,6 @@ $render_category_tile = static function ( $term, $index ) {
 					<?php echo esc_html( $term->name ); ?>
 				</div>
 			<?php endif; ?>
-			<div class="lx-cat-tile__bar"></div>
 		</div>
 		<div class="lx-cat-tile__label">
 			<?php echo esc_html( $term->name ); ?>
