@@ -102,6 +102,13 @@ function enhanced_admin_save() {
 		'sale_banner_btn'     => 'sanitize_text_field',
 		'sale_banner_url'     => 'esc_url_raw',
 		'sale_banner_image'   => 'absint',
+		// New arrivals slider
+		'arrivals_slider_count'    => 'absint',
+		'arrivals_slider_autoplay' => 'absint',
+		'arrivals_slider_step'     => 'absint',
+		'arrivals_slider_desktop_columns' => 'absint',
+		'arrivals_slider_tablet_columns'  => 'absint',
+		'arrivals_slider_mobile_columns'  => 'absint',
 		// Blog / Newsletter
 		'blog_section_desc' => 'sanitize_textarea_field',
 		'newsletter_desc'   => 'sanitize_textarea_field',
@@ -147,9 +154,11 @@ function enhanced_admin_save() {
 		set_theme_mod( "enhanced_rp_{$panel}_images", implode( ',', $ids ) );
 	}
 
-	/* Checkbox — only update if the shop tab was submitted */
+	/* Checkboxes — only update if the shop tab was submitted */
 	if ( array_key_exists( 'enhanced_shop_sidebar', $_POST ) || 'shop' === $tab ) {
 		set_theme_mod( 'enhanced_shop_sidebar', isset( $_POST['enhanced_shop_sidebar'] ) );
+		set_theme_mod( 'enhanced_arrivals_slider_loop', isset( $_POST['enhanced_arrivals_slider_loop'] ) );
+		set_theme_mod( 'enhanced_arrivals_slider_pause_hover', isset( $_POST['enhanced_arrivals_slider_pause_hover'] ) );
 	}
 
 	wp_redirect( add_query_arg(
@@ -550,6 +559,32 @@ function enhanced_admin_tab_shop() {
 	echo '<hr class="en-divider">';
 	en_heading( __( 'Shop Page', 'enhanced' ) );
 	en_checkbox( 'shop_sidebar', __( 'Show sidebar filters on shop page', 'enhanced' ), true );
+
+	echo '<hr class="en-divider">';
+	en_heading( __( 'New Arrivals Slider', 'enhanced' ) );
+	en_field( 'arrivals_slider_count', __( 'Products to show', 'enhanced' ), 'number', 8, __( 'Recommended: 6 to 10 products.', 'enhanced' ) );
+	en_field( 'arrivals_slider_autoplay', __( 'Autoplay speed (ms)', 'enhanced' ), 'number', 3200, __( 'Set 0 to disable autoplay. Example: 3200.', 'enhanced' ) );
+	en_field( 'arrivals_slider_step', __( 'Slides per move', 'enhanced' ), 'number', 1, __( 'How many cards move on each arrow click or autoplay step.', 'enhanced' ) );
+	en_select(
+		'arrivals_slider_desktop_columns',
+		__( 'Cards on desktop', 'enhanced' ),
+		array( '2' => '2', '3' => '3', '4' => '4', '5' => '5' ),
+		'4'
+	);
+	en_select(
+		'arrivals_slider_tablet_columns',
+		__( 'Cards on tablet', 'enhanced' ),
+		array( '1' => '1', '2' => '2', '3' => '3' ),
+		'2'
+	);
+	en_select(
+		'arrivals_slider_mobile_columns',
+		__( 'Cards on mobile', 'enhanced' ),
+		array( '1' => '1', '2' => '2' ),
+		'1'
+	);
+	en_checkbox( 'arrivals_slider_loop', __( 'Loop slider continuously', 'enhanced' ), true );
+	en_checkbox( 'arrivals_slider_pause_hover', __( 'Pause autoplay on hover or focus', 'enhanced' ), true );
 
 	echo '<hr class="en-divider">';
 	en_heading( __( 'Blog Section', 'enhanced' ) );

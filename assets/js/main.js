@@ -1262,12 +1262,15 @@
 			const prevButton = slider.querySelector("[data-rail-prev]");
 			const nextButton = slider.querySelector("[data-rail-next]");
 			const autoplayDelay = Number(slider.dataset.railAutoplay || 0);
+			const stepCount = Math.max(1, Number(slider.dataset.railStep || 1));
+			const shouldLoop = slider.dataset.railLoop !== "0";
+			const pauseOnHover = slider.dataset.railPauseHover !== "0";
 			if (!track || !prevButton || !nextButton) return;
 
 			let autoplayId = 0;
 
 			const prepareAutoplayTrack = function () {
-				if (!autoplayDelay) {
+				if (!autoplayDelay || !shouldLoop) {
 					return;
 				}
 
@@ -1296,13 +1299,19 @@
 				const gap = parseFloat(window.getComputedStyle(track).columnGap || window.getComputedStyle(track).gap || 0);
 
 				if (!firstItem) {
-					return track.clientWidth * 0.82;
+					return track.clientWidth;
 				}
 
-				return firstItem.getBoundingClientRect().width + gap;
+				return (firstItem.getBoundingClientRect().width + gap) * stepCount;
 			};
 
 			const updateButtons = function () {
+				if (shouldLoop) {
+					prevButton.disabled = false;
+					nextButton.disabled = false;
+					return;
+				}
+
 				const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 4);
 				prevButton.disabled = track.scrollLeft <= 4;
 				nextButton.disabled = track.scrollLeft >= maxScroll;
@@ -1320,21 +1329,45 @@
 				}
 
 				autoplayId = window.setTimeout(function () {
-					const step = getStep() * 1.08;
+					const step = getStep();
 					const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 4);
-					const nextLeft = track.scrollLeft + step >= maxScroll ? 0 : track.scrollLeft + step;
+					let nextLeft = track.scrollLeft + step;
+
+					if (nextLeft >= maxScroll) {
+						nextLeft = shouldLoop ? 0 : maxScroll;
+					}
+
 					track.scrollTo({ left: nextLeft, behavior: "smooth" });
-					queueAutoplay();
+
+					if (shouldLoop || nextLeft < maxScroll) {
+						queueAutoplay();
+					}
 				}, autoplayDelay);
 			};
 
 			prevButton.addEventListener("click", function () {
-				track.scrollBy({ left: -getStep() * 1.4, behavior: "smooth" });
+				const step = getStep();
+				const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 4);
+				let nextLeft = track.scrollLeft - step;
+
+				if (nextLeft <= 0) {
+					nextLeft = shouldLoop ? maxScroll : 0;
+				}
+
+				track.scrollTo({ left: nextLeft, behavior: "smooth" });
 				queueAutoplay();
 			});
 
 			nextButton.addEventListener("click", function () {
-				track.scrollBy({ left: getStep() * 1.4, behavior: "smooth" });
+				const step = getStep();
+				const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 4);
+				let nextLeft = track.scrollLeft + step;
+
+				if (nextLeft >= maxScroll) {
+					nextLeft = shouldLoop ? 0 : maxScroll;
+				}
+
+				track.scrollTo({ left: nextLeft, behavior: "smooth" });
 				queueAutoplay();
 			});
 
@@ -1342,15 +1375,20 @@
 			window.addEventListener("resize", function () {
 				prepareAutoplayTrack();
 				updateButtons();
+				queueAutoplay();
 			});
-			slider.addEventListener("mouseenter", stopAutoplay);
-			slider.addEventListener("mouseleave", queueAutoplay);
-			slider.addEventListener("focusin", stopAutoplay);
-			slider.addEventListener("focusout", function (event) {
-				if (!slider.contains(event.relatedTarget)) {
-					queueAutoplay();
-				}
-			});
+
+			if (pauseOnHover) {
+				slider.addEventListener("mouseenter", stopAutoplay);
+				slider.addEventListener("mouseleave", queueAutoplay);
+				slider.addEventListener("focusin", stopAutoplay);
+				slider.addEventListener("focusout", function (event) {
+					if (!slider.contains(event.relatedTarget)) {
+						queueAutoplay();
+					}
+				});
+			}
+
 			prepareAutoplayTrack();
 			updateButtons();
 			queueAutoplay();

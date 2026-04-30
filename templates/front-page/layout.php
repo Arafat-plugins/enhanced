@@ -40,12 +40,28 @@ defined( 'ABSPATH' ) || exit;
 	<?php /* 5. New arrivals */ ?>
 	<?php if ( ! empty( $arrivals ) ) : ?>
 		<?php
+		$arrivals_slider_count    = min( 10, max( 4, (int) enhanced_get_option( 'arrivals_slider_count', 8 ) ) );
+		$arrivals_slider_autoplay = max( 0, (int) enhanced_get_option( 'arrivals_slider_autoplay', 3200 ) );
+		$arrivals_slider_step     = min( 4, max( 1, (int) enhanced_get_option( 'arrivals_slider_step', 1 ) ) );
+		$arrivals_slider_desktop  = min( 5, max( 2, (int) enhanced_get_option( 'arrivals_slider_desktop_columns', 4 ) ) );
+		$arrivals_slider_tablet   = min( 3, max( 1, (int) enhanced_get_option( 'arrivals_slider_tablet_columns', 2 ) ) );
+		$arrivals_slider_mobile   = min( 2, max( 1, (int) enhanced_get_option( 'arrivals_slider_mobile_columns', 1 ) ) );
+		$arrivals_slider_loop     = (bool) enhanced_get_option( 'arrivals_slider_loop', true );
+		$arrivals_slider_pause    = (bool) enhanced_get_option( 'arrivals_slider_pause_hover', true );
+
 		enhanced_get_template(
 			'front-page/product-rail',
 			array(
-				'section_classes' => 'lx-product-rail--grid',
-				'products'        => array_slice( $arrivals, 0, 8 ),
+				'section_classes' => 'lx-product-rail--grid lx-product-rail--arrivals',
+				'products'        => array_slice( $arrivals, 0, $arrivals_slider_count ),
 				'shop_url'        => $shop_url,
+				'rail_autoplay'   => $arrivals_slider_autoplay,
+				'rail_step'       => $arrivals_slider_step,
+				'rail_loop'       => $arrivals_slider_loop,
+				'rail_pause_hover'=> $arrivals_slider_pause,
+				'rail_cols_desktop' => $arrivals_slider_desktop,
+				'rail_cols_tablet'  => $arrivals_slider_tablet,
+				'rail_cols_mobile'  => $arrivals_slider_mobile,
 				'eyebrow'         => '',
 				'title'           => __( 'New Arrivals', 'enhanced' ),
 				'link_label'      => __( 'View All', 'enhanced' ),

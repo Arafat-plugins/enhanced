@@ -839,6 +839,10 @@ body {
   display: none;
 }
 
+.lx-product-rail--arrivals .lx-nav-arrows {
+  display: flex;
+}
+
 .lx-product-tabs {
   display: flex;
   align-items: center;
@@ -980,6 +984,183 @@ body {
 
 .lx-badge--new {
   background: var(--lx-black);
+}
+
+.lx-product-rail--arrivals .lx-rail-track {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 6px;
+  background: transparent;
+}
+
+.lx-product-rail--arrivals .lx-rail-track::-webkit-scrollbar {
+  display: none;
+}
+
+.lx-product-rail--arrivals .lx-prod-card--arrival {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  flex: 0 0 calc((100% - ((var(--lx-arrivals-cols-desktop, 4) - 1) * 18px)) / var(--lx-arrivals-cols-desktop, 4));
+  min-width: 0;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, .08);
+  scroll-snap-align: start;
+  transition: transform .24s ease, box-shadow .24s ease;
+}
+
+.lx-product-rail--arrivals .lx-prod-card--arrival:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 38px rgba(15, 23, 42, .12);
+}
+
+.lx-prod-card__img--arrival {
+  margin-bottom: 0;
+  aspect-ratio: 1 / 1.2;
+  border-radius: 20px 20px 0 0;
+  background: transparent;
+}
+
+.lx-prod-card__img--arrival img {
+  object-fit: contain;
+  padding: 12px;
+}
+
+.lx-badge--arrival {
+  left: 12px;
+  top: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 9px;
+  letter-spacing: .04em;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, .1);
+}
+
+.lx-prod-card__wishlist {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .96);
+  color: #111827;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .12);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.lx-prod-card__wishlist .product-details__wishlist-icon {
+  font-size: 18px;
+}
+
+.lx-prod-card__wishlist.is-active {
+  color: #dc2626;
+}
+
+.lx-product-rail--arrivals .lx-prod-card__swatches {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: grid;
+  gap: 6px;
+}
+
+.lx-product-rail--arrivals .lx-prod-card__swatch {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: var(--card-swatch, #d1d5db);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, .18);
+}
+
+.lx-product-rail--arrivals .lx-prod-card__swatch--light {
+  box-shadow: 0 0 0 1px rgba(156, 163, 175, .78);
+}
+
+.lx-prod-card__body--arrival {
+  display: grid;
+  gap: 8px;
+  padding: 12px 12px 14px;
+}
+
+.lx-prod-card__name--arrival {
+  min-height: 0;
+  margin: 0;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.lx-prod-card__name--arrival a {
+  color: inherit;
+}
+
+.lx-prod-card__price--arrival {
+  color: #111827;
+  font-size: 13px;
+}
+
+.lx-prod-card__price--arrival bdi,
+.lx-prod-card__price--arrival ins bdi {
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.lx-prod-card__price--arrival del bdi {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.lx-prod-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lx-prod-card__meta-label {
+  flex: 0 0 auto;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.lx-prod-card__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lx-prod-card__size {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 /* Sale blocks */
@@ -1421,6 +1602,10 @@ body {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .lx-product-rail--arrivals .lx-prod-card--arrival {
+    flex-basis: calc((100% - ((var(--lx-arrivals-cols-tablet, 2) - 1) * 18px)) / var(--lx-arrivals-cols-tablet, 2));
+  }
+
   .site-footer__grid {
     grid-template-columns: 1.2fr repeat(3, 1fr);
   }
@@ -1705,6 +1890,27 @@ body {
     letter-spacing: .02em;
   }
 
+  .lx-product-rail--arrivals .lx-rail-track {
+    gap: 14px;
+  }
+
+  .lx-product-rail--arrivals .lx-prod-card--arrival {
+    flex-basis: calc((100% - ((var(--lx-arrivals-cols-tablet, 2) - 1) * 14px)) / var(--lx-arrivals-cols-tablet, 2));
+  }
+
+  .lx-prod-card__img--arrival {
+    border-radius: 16px 16px 0 0;
+  }
+
+  .lx-prod-card__body--arrival {
+    gap: 7px;
+    padding: 10px 10px 12px;
+  }
+
+  .lx-prod-card__name--arrival {
+    font-size: 13px;
+  }
+
   .lx-sale-banner {
     width: calc(100% - 32px);
   }
@@ -1743,6 +1949,77 @@ body {
     padding: 9px 6px 10px;
     font-size: 11px;
     letter-spacing: .02em;
+  }
+
+  .lx-product-rail--arrivals .lx-rail-track {
+    gap: 12px;
+  }
+
+  .lx-prod-card--arrival {
+    flex-basis: calc((100% - ((var(--lx-arrivals-cols-mobile, 1) - 1) * 12px)) / var(--lx-arrivals-cols-mobile, 1));
+    border-radius: 16px;
+  }
+
+  .lx-prod-card__img--arrival {
+    aspect-ratio: 1 / 1.16;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .lx-prod-card__wishlist {
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .lx-prod-card__wishlist .product-details__wishlist-icon {
+    font-size: 16px;
+  }
+
+  .lx-prod-card__swatches {
+    right: 10px;
+    bottom: 10px;
+    gap: 5px;
+  }
+
+  .lx-prod-card__swatch {
+    width: 9px;
+    height: 9px;
+  }
+
+  .lx-prod-card__body--arrival {
+    gap: 6px;
+    padding: 9px 9px 11px;
+  }
+
+  .lx-prod-card__name--arrival {
+    font-size: 12px;
+  }
+
+  .lx-prod-card__price--arrival bdi,
+  .lx-prod-card__price--arrival ins bdi {
+    font-size: 13px;
+  }
+
+  .lx-prod-card__meta {
+    gap: 6px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lx-prod-card__meta-label {
+    font-size: 10px;
+  }
+
+  .lx-prod-card__sizes {
+    gap: 5px;
+  }
+
+  .lx-prod-card__size {
+    min-width: 24px;
+    height: 20px;
+    padding: 0 6px;
+    font-size: 9px;
   }
 
   .lx-product-rail--grid .lx-rail-track {
