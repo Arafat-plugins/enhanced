@@ -64,6 +64,9 @@
 	};
 
 	onReady(function () {
+		syncHeroViewportHeight();
+		window.addEventListener("resize", syncHeroViewportHeight, { passive: true });
+		window.addEventListener("orientationchange", syncHeroViewportHeight);
 		initMobileMenu();
 		initSearchDrawer();
 		initShopFeatures();
@@ -76,6 +79,37 @@
 		initHomeRails();
 		initMarqueeRails();
 	});
+
+	function syncHeroViewportHeight() {
+		const hero = document.querySelector(".lx-hero-grid");
+		if (!hero) {
+			document.documentElement.style.removeProperty("--lx-hero-offset");
+			return;
+		}
+
+		const measureVisibleHeight = function (element) {
+			if (!element) {
+				return 0;
+			}
+
+			const style = window.getComputedStyle(element);
+			if (style.display === "none" || style.visibility === "hidden") {
+				return 0;
+			}
+
+			return Math.round(element.getBoundingClientRect().height);
+		};
+
+		const utilityBar = document.querySelector(".utility-bar");
+		const header = document.querySelector("[data-site-header]");
+		const adminBar = document.getElementById("wpadminbar");
+		const offset =
+			measureVisibleHeight(utilityBar) +
+			measureVisibleHeight(header) +
+			measureVisibleHeight(adminBar);
+
+		document.documentElement.style.setProperty("--lx-hero-offset", offset + "px");
+	}
 
 	function requestFormSubmit(form) {
 		if (!form) {

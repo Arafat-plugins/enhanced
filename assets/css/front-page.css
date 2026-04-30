@@ -251,13 +251,6 @@
 }
 
 /* ============================================================
- * BROWSE CATEGORIES
- * ============================================================ */
-.lx-browse-cats {
-  padding: 56px 0;
-}
-
-/* ============================================================
  * SALE IS ON
  * ============================================================ */
 .lx-sale-on {
@@ -626,16 +619,9 @@
  * ============================================================ */
 @media (max-width: 1024px) {
   .lx-blog-grid  { grid-template-columns: repeat(2, 1fr); }
-  .lx-hero-grid  { max-height: none; }
 }
 
 @media (max-width: 860px) {
-  .lx-hero-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-  }
-  .lx-hero-left { grid-row: auto; min-height: 380px; }
-  .lx-hero-tr, .lx-hero-br { min-height: 200px; }
   .fp2-newsletter__inner { flex-direction: column; align-items: flex-start; }
   .fp2-newsletter__form  { flex: 0 0 100%; width: 100%; }
 }
@@ -643,7 +629,6 @@
 @media (max-width: 640px) {
   .lx-blog-grid  { grid-template-columns: 1fr; }
   .lx-sec-head   { flex-wrap: wrap; gap: 12px; }
-  .lx-hero-discount { font-size: 68px; }
   .fp2-newsletter__form { flex-direction: column; gap: 8px; }
   .fp2-newsletter__input { border-right: 1.5px solid var(--lx-line); }
   .fp2-newsletter__btn { width: 100%; }

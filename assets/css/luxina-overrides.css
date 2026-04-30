@@ -291,7 +291,12 @@ body {
   gap: 8px !important;
   width: auto !important;
   max-width: none !important;
-  min-height: clamp(680px, 70vh, 780px) !important;
+  height: calc(100vh - var(--lx-hero-offset, 0px)) !important;
+  height: calc(100svh - var(--lx-hero-offset, 0px)) !important;
+  height: calc(100dvh - var(--lx-hero-offset, 0px)) !important;
+  min-height: calc(100vh - var(--lx-hero-offset, 0px)) !important;
+  min-height: calc(100svh - var(--lx-hero-offset, 0px)) !important;
+  min-height: calc(100dvh - var(--lx-hero-offset, 0px)) !important;
   margin: 0 8px !important;
   background: transparent !important;
 }
@@ -1426,7 +1431,29 @@ body {
     display: none;
   }
 
+  .site-header__inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    height: 56px;
+  }
+
+  .site-header__logo-text {
+    font-size: clamp(22px, 5.6vw, 28px);
+  }
+
   .site-header__inline-search {
+    display: none;
+  }
+
+  .site-header__actions {
+    gap: 2px;
+  }
+
+  .header-icon-btn--account {
+    padding: 0;
+  }
+
+  .header-account-label {
     display: none;
   }
 
@@ -1483,9 +1510,10 @@ body {
   .lx-hero-grid {
     grid-template-columns: minmax(0, 1.45fr) minmax(150px, .72fr) !important;
     grid-template-rows: minmax(210px, 1fr) minmax(165px, .82fr) !important;
+    height: auto !important;
     min-height: clamp(380px, 72vw, 560px) !important;
     max-height: none !important;
-    margin: 0 10px !important;
+    margin: 0 !important;
     gap: 8px !important;
   }
 
@@ -1540,12 +1568,33 @@ body {
 }
 
 @media (max-width: 560px) {
+  .site-header__inner {
+    gap: 8px;
+    height: 52px;
+    padding-inline: 12px;
+  }
+
+  .site-header__logo-text {
+    font-size: clamp(18px, 6vw, 24px);
+  }
+
+  .header-icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .header-cart__count {
+    top: -1px;
+    right: -1px;
+  }
+
   .lx-hero-grid {
     grid-template-columns: minmax(0, 1.35fr) minmax(118px, .7fr) !important;
     grid-template-rows: minmax(180px, 1fr) minmax(132px, .78fr) !important;
+    height: auto !important;
     min-height: clamp(320px, 78vw, 440px) !important;
     gap: 6px !important;
-    margin: 0 10px !important;
+    margin: 0 !important;
   }
 
   .lx-hero-left__content {
