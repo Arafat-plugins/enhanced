@@ -1265,37 +1265,81 @@
 			const stepCount = Math.max(1, Number(slider.dataset.railStep || 1));
 			const shouldLoop = slider.dataset.railLoop !== "0";
 			const pauseOnHover = slider.dataset.railPauseHover !== "0";
+			const animationType = slider.dataset.railAnimation || "slide-left";
+			const animationDuration = Math.min(3000, Math.max(200, Number(slider.dataset.railAnimationDuration || 700)));
+			const animationEasing = slider.dataset.railAnimationEasing || "smooth";
 			if (!track || !prevButton || !nextButton) return;
 
 			let autoplayId = 0;
+			let activeAnimation = null;
+			let wrapId = 0;
+			let loopStart = 0;
+			let loopEnd = 0;
+			let loopSpan = 0;
 
-			const prepareAutoplayTrack = function () {
-				if (!autoplayDelay || !shouldLoop) {
+			const clearLoopClones = function () {
+				Array.from(track.querySelectorAll("[data-rail-clone='true']")).forEach(function (clone) {
+					clone.remove();
+				});
+			};
+
+			const prepareLoopClone = function (item) {
+				const clone = item.cloneNode(true);
+				clone.dataset.railClone = "true";
+				clone.setAttribute("aria-hidden", "true");
+
+				clone.querySelectorAll("a, button, input, select, textarea").forEach(function (element) {
+					element.setAttribute("tabindex", "-1");
+					element.setAttribute("aria-hidden", "true");
+
+					if (element.tagName === "BUTTON") {
+						element.disabled = true;
+					}
+				});
+
+				return clone;
+			};
+
+			const prepareLoopTrack = function () {
+				clearLoopClones();
+				loopStart = 0;
+				loopEnd = 0;
+				loopSpan = 0;
+
+				if (!shouldLoop) {
 					return;
 				}
 
-				const originalItems = Array.from(track.children).filter(function (item) {
-					return item.dataset.railClone !== "true";
-				});
+				const originalItems = Array.from(track.children);
 
 				if (originalItems.length < 2) {
 					return;
 				}
 
-				let cloneIndex = 0;
-				const maxClones = Math.max(originalItems.length * 3, 10);
+				const beforeFragment = document.createDocumentFragment();
+				const afterFragment = document.createDocumentFragment();
+				const afterClones = [];
 
-				while (track.scrollWidth <= track.clientWidth + 8 && cloneIndex < maxClones) {
-					const source = originalItems[cloneIndex % originalItems.length];
-					const clone = source.cloneNode(true);
-					clone.dataset.railClone = "true";
-					track.appendChild(clone);
-					cloneIndex += 1;
-				}
+				originalItems.forEach(function (item) {
+					const beforeClone = prepareLoopClone(item);
+					const afterClone = prepareLoopClone(item);
+
+					beforeFragment.appendChild(beforeClone);
+					afterFragment.appendChild(afterClone);
+					afterClones.push(afterClone);
+				});
+
+				track.prepend(beforeFragment);
+				track.appendChild(afterFragment);
+
+				loopStart = originalItems[0].offsetLeft;
+				loopEnd = afterClones[0].offsetLeft;
+				loopSpan = loopEnd - loopStart;
+				track.scrollLeft = loopStart;
 			};
 
 			const getStep = function () {
-				const firstItem = track.children[0];
+				const firstItem = track.querySelector(".lx-prod-card--arrival:not([data-rail-clone='true'])") || track.children[0];
 				const gap = parseFloat(window.getComputedStyle(track).columnGap || window.getComputedStyle(track).gap || 0);
 
 				if (!firstItem) {
@@ -1303,6 +1347,109 @@
 				}
 
 				return (firstItem.getBoundingClientRect().width + gap) * stepCount;
+			};
+
+			const resolveEasing = function (value) {
+				switch (value) {
+					case "ease":
+					case "ease-in":
+					case "ease-out":
+					case "ease-in-out":
+					case "linear":
+						return value;
+					case "smooth":
+					default:
+						return "cubic-bezier(0.22, 1, 0.36, 1)";
+				}
+			};
+
+			const resolveAnimationType = function () {
+				if (animationType !== "random") {
+					return animationType;
+				}
+
+				const options = ["fade", "slide-right", "slide-left", "slide-up", "slide-down", "zoom-in", "zoom-out"];
+				return options[Math.floor(Math.random() * options.length)];
+			};
+
+			const buildKeyframes = function (type) {
+				switch (type) {
+					case "fade":
+						return [
+							{ opacity: 0.52 },
+							{ opacity: 1 }
+						];
+					case "slide-right":
+						return [
+							{ opacity: 0.75, transform: "translate3d(-28px, 0, 0)" },
+							{ opacity: 1, transform: "translate3d(0, 0, 0)" }
+						];
+					case "slide-left":
+						return [
+							{ opacity: 0.75, transform: "translate3d(28px, 0, 0)" },
+							{ opacity: 1, transform: "translate3d(0, 0, 0)" }
+						];
+					case "slide-up":
+						return [
+							{ opacity: 0.78, transform: "translate3d(0, 24px, 0)" },
+							{ opacity: 1, transform: "translate3d(0, 0, 0)" }
+						];
+					case "slide-down":
+						return [
+							{ opacity: 0.78, transform: "translate3d(0, -24px, 0)" },
+							{ opacity: 1, transform: "translate3d(0, 0, 0)" }
+						];
+					case "zoom-in":
+						return [
+							{ opacity: 0.78, transform: "scale(0.94)" },
+							{ opacity: 1, transform: "scale(1)" }
+						];
+					case "zoom-out":
+					default:
+						return [
+							{ opacity: 0.78, transform: "scale(1.04)" },
+							{ opacity: 1, transform: "scale(1)" }
+						];
+				}
+			};
+
+			const playRailAnimation = function () {
+				if (!track.animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+					return;
+				}
+
+				if (activeAnimation) {
+					activeAnimation.cancel();
+				}
+
+				activeAnimation = track.animate(buildKeyframes(resolveAnimationType()), {
+					duration: animationDuration,
+					easing: resolveEasing(animationEasing),
+					fill: "none"
+				});
+			};
+
+			const normalizeLoopPosition = function () {
+				if (!shouldLoop || !loopSpan) {
+					return;
+				}
+
+				if (track.scrollLeft <= loopStart - 2) {
+					track.scrollLeft += loopSpan;
+				} else if (track.scrollLeft >= loopEnd - 2) {
+					track.scrollLeft -= loopSpan;
+				}
+			};
+
+			const scheduleLoopNormalize = function () {
+				if (!shouldLoop || !loopSpan) {
+					return;
+				}
+
+				window.clearTimeout(wrapId);
+				wrapId = window.setTimeout(function () {
+					normalizeLoopPosition();
+				}, animationDuration + 80);
 			};
 
 			const updateButtons = function () {
@@ -1333,11 +1480,13 @@
 					const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 4);
 					let nextLeft = track.scrollLeft + step;
 
-					if (nextLeft >= maxScroll) {
-						nextLeft = shouldLoop ? 0 : maxScroll;
+					if (!shouldLoop && nextLeft >= maxScroll) {
+						nextLeft = maxScroll;
 					}
 
+					playRailAnimation();
 					track.scrollTo({ left: nextLeft, behavior: "smooth" });
+					scheduleLoopNormalize();
 
 					if (shouldLoop || nextLeft < maxScroll) {
 						queueAutoplay();
@@ -1347,14 +1496,15 @@
 
 			prevButton.addEventListener("click", function () {
 				const step = getStep();
-				const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 4);
 				let nextLeft = track.scrollLeft - step;
 
-				if (nextLeft <= 0) {
-					nextLeft = shouldLoop ? maxScroll : 0;
+				if (!shouldLoop && nextLeft <= 0) {
+					nextLeft = 0;
 				}
 
+				playRailAnimation();
 				track.scrollTo({ left: nextLeft, behavior: "smooth" });
+				scheduleLoopNormalize();
 				queueAutoplay();
 			});
 
@@ -1363,17 +1513,20 @@
 				const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 4);
 				let nextLeft = track.scrollLeft + step;
 
-				if (nextLeft >= maxScroll) {
-					nextLeft = shouldLoop ? 0 : maxScroll;
+				if (!shouldLoop && nextLeft >= maxScroll) {
+					nextLeft = maxScroll;
 				}
 
+				playRailAnimation();
 				track.scrollTo({ left: nextLeft, behavior: "smooth" });
+				scheduleLoopNormalize();
 				queueAutoplay();
 			});
 
 			track.addEventListener("scroll", updateButtons, { passive: true });
 			window.addEventListener("resize", function () {
-				prepareAutoplayTrack();
+				window.clearTimeout(wrapId);
+				prepareLoopTrack();
 				updateButtons();
 				queueAutoplay();
 			});
@@ -1389,7 +1542,7 @@
 				});
 			}
 
-			prepareAutoplayTrack();
+			prepareLoopTrack();
 			updateButtons();
 			queueAutoplay();
 		});

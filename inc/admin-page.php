@@ -106,6 +106,9 @@ function enhanced_admin_save() {
 		'arrivals_slider_count'    => 'absint',
 		'arrivals_slider_autoplay' => 'absint',
 		'arrivals_slider_step'     => 'absint',
+		'arrivals_slider_animation' => 'enhanced_sanitize_rp_animation',
+		'arrivals_slider_animation_duration' => 'absint',
+		'arrivals_slider_animation_easing' => 'enhanced_sanitize_rp_animation_easing',
 		'arrivals_slider_desktop_columns' => 'absint',
 		'arrivals_slider_tablet_columns'  => 'absint',
 		'arrivals_slider_mobile_columns'  => 'absint',
@@ -146,10 +149,10 @@ function enhanced_admin_save() {
 		if ( ! array_key_exists( "enhanced_rp_{$panel}_images", $_POST ) ) {
 			continue;
 		}
-		$ids = array_slice(
-			array_filter( array_map( 'absint', explode( ',', $_POST[ "enhanced_rp_{$panel}_images" ] ) ) ),
-			0,
-			3
+		$ids = array_values(
+			array_unique(
+				array_filter( array_map( 'absint', explode( ',', $_POST[ "enhanced_rp_{$panel}_images" ] ) ) )
+			)
 		);
 		set_theme_mod( "enhanced_rp_{$panel}_images", implode( ',', $ids ) );
 	}
@@ -421,7 +424,11 @@ function enhanced_admin_tab_slides() {
 		$title      = esc_attr( _en_mod( "rp_{$panel_key}_title", '' ) );
 		$opacity    = min( 100, max( 0, (int) _en_mod( "rp_{$panel_key}_opacity", 25 ) ) );
 		$ids_raw    = _en_mod( "rp_{$panel_key}_images", '' );
-		$image_ids  = array_slice( array_filter( array_map( 'intval', explode( ',', $ids_raw ) ) ), 0, 3 );
+		$image_ids  = array_values(
+			array_unique(
+				array_filter( array_map( 'intval', explode( ',', $ids_raw ) ) )
+			)
+		);
 		?>
 		<div class="en-rp-panel">
 
@@ -457,7 +464,7 @@ function enhanced_admin_tab_slides() {
 				<?php if ( empty( $image_ids ) ) : ?>
 					<div class="en-rp-empty">
 						<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-						<p><?php esc_html_e( 'No images yet. Click "+ Upload Images" to add 1–3 slides.', 'enhanced' ); ?></p>
+						<p><?php esc_html_e( 'No images yet. Click "+ Upload Images" to add as many slides as you want.', 'enhanced' ); ?></p>
 					</div>
 				<?php else : ?>
 					<?php foreach ( $image_ids as $img_id ) :
@@ -565,6 +572,25 @@ function enhanced_admin_tab_shop() {
 	en_field( 'arrivals_slider_count', __( 'Products to show', 'enhanced' ), 'number', 8, __( 'Recommended: 6 to 10 products.', 'enhanced' ) );
 	en_field( 'arrivals_slider_autoplay', __( 'Autoplay speed (ms)', 'enhanced' ), 'number', 3200, __( 'Set 0 to disable autoplay. Example: 3200.', 'enhanced' ) );
 	en_field( 'arrivals_slider_step', __( 'Slides per move', 'enhanced' ), 'number', 1, __( 'How many cards move on each arrow click or autoplay step.', 'enhanced' ) );
+	en_select(
+		'arrivals_slider_animation',
+		__( 'Animation type', 'enhanced' ),
+		enhanced_get_rp_animation_choices(),
+		'slide-left'
+	);
+	en_field(
+		'arrivals_slider_animation_duration',
+		__( 'Animation speed (ms)', 'enhanced' ),
+		'number',
+		700,
+		__( 'Controls how long each slider movement animation runs. Recommended: 400 to 900.', 'enhanced' )
+	);
+	en_select(
+		'arrivals_slider_animation_easing',
+		__( 'Animation easing', 'enhanced' ),
+		enhanced_get_rp_animation_easing_choices(),
+		'smooth'
+	);
 	en_select(
 		'arrivals_slider_desktop_columns',
 		__( 'Cards on desktop', 'enhanced' ),

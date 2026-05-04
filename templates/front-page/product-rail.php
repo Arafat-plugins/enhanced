@@ -15,6 +15,9 @@ $rail_autoplay     = isset( $rail_autoplay ) ? max( 0, (int) $rail_autoplay ) : 
 $rail_step         = isset( $rail_step ) ? min( 4, max( 1, (int) $rail_step ) ) : 1;
 $rail_loop         = isset( $rail_loop ) ? (bool) $rail_loop : true;
 $rail_pause_hover  = isset( $rail_pause_hover ) ? (bool) $rail_pause_hover : true;
+$rail_animation    = isset( $rail_animation ) ? enhanced_sanitize_rp_animation( $rail_animation ) : 'slide-left';
+$rail_animation_duration = isset( $rail_animation_duration ) ? min( 3000, max( 200, (int) $rail_animation_duration ) ) : 700;
+$rail_animation_easing = isset( $rail_animation_easing ) ? enhanced_sanitize_rp_animation_easing( $rail_animation_easing ) : 'smooth';
 $rail_cols_desktop = isset( $rail_cols_desktop ) ? min( 5, max( 2, (int) $rail_cols_desktop ) ) : 4;
 $rail_cols_tablet  = isset( $rail_cols_tablet ) ? min( 3, max( 1, (int) $rail_cols_tablet ) ) : 2;
 $rail_cols_mobile  = isset( $rail_cols_mobile ) ? min( 2, max( 1, (int) $rail_cols_mobile ) ) : 1;
@@ -171,6 +174,9 @@ $render_product_card = static function ( $product_item, $i, $is_duplicate = fals
 			echo ' data-rail-step="' . esc_attr( $rail_step ) . '"';
 			echo ' data-rail-loop="' . esc_attr( $rail_loop ? '1' : '0' ) . '"';
 			echo ' data-rail-pause-hover="' . esc_attr( $rail_pause_hover ? '1' : '0' ) . '"';
+			echo ' data-rail-animation="' . esc_attr( $rail_animation ) . '"';
+			echo ' data-rail-animation-duration="' . esc_attr( $rail_animation_duration ) . '"';
+			echo ' data-rail-animation-easing="' . esc_attr( $rail_animation_easing ) . '"';
 			echo ' style="--lx-arrivals-cols-desktop:' . esc_attr( $rail_cols_desktop ) . ';--lx-arrivals-cols-tablet:' . esc_attr( $rail_cols_tablet ) . ';--lx-arrivals-cols-mobile:' . esc_attr( $rail_cols_mobile ) . ';"';
 		}
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

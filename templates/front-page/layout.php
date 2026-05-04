@@ -43,6 +43,9 @@ defined( 'ABSPATH' ) || exit;
 		$arrivals_slider_count    = min( 10, max( 4, (int) enhanced_get_option( 'arrivals_slider_count', 8 ) ) );
 		$arrivals_slider_autoplay = max( 0, (int) enhanced_get_option( 'arrivals_slider_autoplay', 3200 ) );
 		$arrivals_slider_step     = min( 4, max( 1, (int) enhanced_get_option( 'arrivals_slider_step', 1 ) ) );
+		$arrivals_slider_animation = enhanced_sanitize_rp_animation( enhanced_get_option( 'arrivals_slider_animation', 'slide-left' ) );
+		$arrivals_slider_animation_duration = min( 3000, max( 200, (int) enhanced_get_option( 'arrivals_slider_animation_duration', 700 ) ) );
+		$arrivals_slider_animation_easing = enhanced_sanitize_rp_animation_easing( enhanced_get_option( 'arrivals_slider_animation_easing', 'smooth' ) );
 		$arrivals_slider_desktop  = min( 5, max( 2, (int) enhanced_get_option( 'arrivals_slider_desktop_columns', 4 ) ) );
 		$arrivals_slider_tablet   = min( 3, max( 1, (int) enhanced_get_option( 'arrivals_slider_tablet_columns', 2 ) ) );
 		$arrivals_slider_mobile   = min( 2, max( 1, (int) enhanced_get_option( 'arrivals_slider_mobile_columns', 1 ) ) );
@@ -59,6 +62,9 @@ defined( 'ABSPATH' ) || exit;
 				'rail_step'       => $arrivals_slider_step,
 				'rail_loop'       => $arrivals_slider_loop,
 				'rail_pause_hover'=> $arrivals_slider_pause,
+				'rail_animation'  => $arrivals_slider_animation,
+				'rail_animation_duration' => $arrivals_slider_animation_duration,
+				'rail_animation_easing' => $arrivals_slider_animation_easing,
 				'rail_cols_desktop' => $arrivals_slider_desktop,
 				'rail_cols_tablet'  => $arrivals_slider_tablet,
 				'rail_cols_mobile'  => $arrivals_slider_mobile,
